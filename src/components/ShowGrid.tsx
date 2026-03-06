@@ -49,7 +49,7 @@ const ShowGrid = () => {
             <p className="font-semibold text-sm truncate">{show.name}</p>
             <div className="flex flex-wrap gap-1.5">
               <PlatformBadge platform={show.platform} />
-              <StatusBadge status={show.status} />
+              <StatusBadge status={getDisplayStatus(show)} />
             </div>
             <div className="flex items-center gap-1.5 pt-1">
               <button

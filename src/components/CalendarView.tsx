@@ -27,7 +27,10 @@ interface CalendarEvent {
 
 const CalendarView = () => {
   const { shows } = useShows();
-  const [mode, setMode] = useState<CalendarMode>('week');
+  const [mode, setMode] = useState<CalendarMode>(() => {
+    const saved = sessionStorage.getItem('streamline-calendar-mode');
+    return (saved === 'month' || saved === 'week') ? saved : 'week';
+  });
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
 

@@ -229,7 +229,7 @@ const AddShowSearch = () => {
           <button
             onClick={handleManualAdd}
             disabled={!manualForm.name.trim()}
-            className="w-full rounded-lg bg-foreground text-background py-2 text-sm font-semibold hover:opacity-90 disabled:opacity-40 transition-opacity"
+            className="w-full rounded-lg bg-platform-manual text-white py-2 text-sm font-semibold hover:opacity-90 disabled:opacity-40 transition-opacity"
           >
             Add Show
           </button>
