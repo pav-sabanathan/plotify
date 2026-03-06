@@ -28,7 +28,7 @@ interface CalendarEvent {
 const CalendarView = () => {
   const { shows } = useShows();
   const [mode, setMode] = useState<CalendarMode>(() => {
-    const saved = sessionStorage.getItem('streamline-calendar-mode');
+    const saved = sessionStorage.getItem('plotify-calendar-mode');
     return (saved === 'month' || saved === 'week') ? saved : 'week';
   });
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -112,7 +112,7 @@ const CalendarView = () => {
             onClick={() => {
               const next = mode === 'week' ? 'month' : 'week';
               setMode(next);
-              sessionStorage.setItem('streamline-calendar-mode', next);
+              sessionStorage.setItem('plotify-calendar-mode', next);
             }}
             className="rounded-md bg-secondary px-3 py-1.5 text-xs font-medium text-secondary-foreground hover:bg-accent transition-colors"
           >
