@@ -1,14 +1,17 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import UpNextStrip from '@/components/UpNextStrip';
+import CalendarView from '@/components/CalendarView';
 
-const Index = () => {
+const Dashboard = () => {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <div className="space-y-6 pb-20 px-4 pt-6 max-w-4xl mx-auto">
+      <div className="flex items-center gap-3">
+        <h1 className="text-2xl font-bold tracking-tight">StreamLine</h1>
+        <span className="text-xs text-muted-foreground bg-secondary rounded-full px-2 py-0.5">Beta</span>
       </div>
+      <UpNextStrip />
+      <CalendarView />
     </div>
   );
 };
 
-export default Index;
+export default Dashboard;
