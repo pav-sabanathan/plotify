@@ -27,7 +27,10 @@ interface CalendarEvent {
 
 const CalendarView = () => {
   const { shows } = useShows();
-  const [mode, setMode] = useState<CalendarMode>('week');
+  const [mode, setMode] = useState<CalendarMode>(() => {
+    const saved = sessionStorage.getItem('streamline-calendar-mode');
+    return (saved === 'month' || saved === 'week') ? saved : 'week';
+  });
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
 
@@ -106,7 +109,11 @@ const CalendarView = () => {
         <h2 className="text-lg font-semibold tracking-tight">Calendar</h2>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setMode(mode === 'week' ? 'month' : 'week')}
+            onClick={() => {
+              const next = mode === 'week' ? 'month' : 'week';
+              setMode(next);
+              sessionStorage.setItem('streamline-calendar-mode', next);
+            }}
             className="rounded-md bg-secondary px-3 py-1.5 text-xs font-medium text-secondary-foreground hover:bg-accent transition-colors"
           >
             {mode === 'week' ? 'Month' : 'Week'}
