@@ -3,7 +3,14 @@ import PlatformBadge from './PlatformBadge';
 import StatusBadge from './StatusBadge';
 import { Pause, Play, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { PLATFORM_BORDER_COLORS } from '@/types/show';
+import { PLATFORM_BORDER_COLORS, TrackedShow } from '@/types/show';
+
+const getDisplayStatus = (show: TrackedShow) => {
+  if (show.releaseType === 'full-season' && show.status !== 'ended') {
+    return 'full-season' as const;
+  }
+  return show.status;
+};
 
 const ShowGrid = () => {
   const { shows, removeShow, togglePause } = useShows();
