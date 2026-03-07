@@ -175,7 +175,7 @@ const AddShowSearch = () => {
       className: 'bg-platform-prime/90 border-platform-prime text-foreground',
       duration: 2000,
     });
-    setManualForm({ name: '', platform: '', releaseDay: 1, releaseTime: '20:00', season: 1, episode: 1 });
+    setManualForm({ name: '', platform: '', releaseDay: 1, releaseTime: '20:00', season: '', episode: '' });
     setErrors({});
     setShowManual(false);
   };
