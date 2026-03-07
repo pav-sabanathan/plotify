@@ -2,9 +2,12 @@ import { useNavigate } from 'react-router-dom';
 import { useShows } from '@/context/ShowsContext';
 import PlatformBadge from './PlatformBadge';
 import StatusBadge from './StatusBadge';
+import FallbackPoster from './FallbackPoster';
 import { Pause, Play, Trash2, Tv } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PLATFORM_BORDER_COLORS, TrackedShow } from '@/types/show';
+
+const isPlaceholder = (poster: string) => !poster || poster === '/placeholder.svg';
 
 const getDisplayStatus = (show: TrackedShow) => {
   if (show.releaseType === 'full-season' && show.status !== 'ended') {
@@ -47,12 +50,16 @@ const ShowGrid = () => {
           style={{ animationDelay: `${i * 50}ms` }}
         >
           <div className="aspect-[2/3] overflow-hidden">
-            <img
-              src={show.poster}
-              alt={show.name}
-              className="w-full h-full object-cover"
-              loading="lazy"
-            />
+            {isPlaceholder(show.poster) ? (
+              <FallbackPoster name={show.name} platform={show.platform} className="w-full h-full" />
+            ) : (
+              <img
+                src={show.poster}
+                alt={show.name}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            )}
           </div>
           <div className="p-3 space-y-2">
             <p className="font-semibold text-sm truncate">{show.name}</p>

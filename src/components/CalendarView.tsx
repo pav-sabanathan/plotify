@@ -9,6 +9,9 @@ import { PLATFORM_COLORS, PLATFORM_LABELS } from '@/types/show';
 import { cn } from '@/lib/utils';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import PlatformBadge from './PlatformBadge';
+import FallbackPoster from './FallbackPoster';
+
+const isPlaceholder = (poster: string) => !poster || poster === '/placeholder.svg';
 
 type CalendarMode = 'week' | 'month';
 
@@ -191,7 +194,11 @@ const CalendarView = () => {
           <div className="bg-card border rounded-xl p-5 max-w-sm w-full mx-4 shadow-2xl animate-fade-in" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-start mb-3">
               <div className="flex gap-3">
-                <img src={selectedEvent.poster} alt={selectedEvent.showName} className="w-14 h-20 rounded-md object-cover" />
+                {isPlaceholder(selectedEvent.poster) ? (
+                  <FallbackPoster name={selectedEvent.showName} platform={selectedEvent.platform as any} className="w-14 h-20" />
+                ) : (
+                  <img src={selectedEvent.poster} alt={selectedEvent.showName} className="w-14 h-20 rounded-md object-cover" />
+                )}
                 <div>
                   <h3 className="font-semibold text-base">{selectedEvent.showName}</h3>
                   <p className="text-sm text-muted-foreground mt-0.5">
