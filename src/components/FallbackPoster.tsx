@@ -30,7 +30,7 @@ const FallbackPoster = ({ name, platform, className }: FallbackPosterProps) => {
       )}
     >
       <Tv className="h-5 w-5 text-muted-foreground mb-1" />
-      <span className="text-xl font-bold text-foreground">{firstLetter}</span>
+      <span className={cn('font-bold text-foreground', initials.length > 4 ? 'text-sm' : initials.length > 2 ? 'text-base' : 'text-xl')}>{initials}</span>
     </div>
   );
 };

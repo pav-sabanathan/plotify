@@ -22,8 +22,8 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6 pb-20 px-4 pt-6 max-w-4xl mx-auto">
-      <div className="flex items-center gap-3">
-        <img src={plotifyLogo} alt="Plotify" className="h-9" />
+      <div className="flex justify-center">
+        <img src={plotifyLogo} alt="Plotify" className="h-12" />
       </div>
       {isEmpty ? (
         <EmptyDashboard />
