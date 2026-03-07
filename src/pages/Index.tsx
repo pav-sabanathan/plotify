@@ -4,6 +4,7 @@ import UpNextStrip from '@/components/UpNextStrip';
 import CalendarView from '@/components/CalendarView';
 import EmptyDashboard from '@/components/EmptyDashboard';
 import OnboardingModal from '@/components/OnboardingModal';
+import AppFooter from '@/components/AppFooter';
 
 const Dashboard = () => {
   const { shows } = useShows();
@@ -32,6 +33,7 @@ const Dashboard = () => {
           <CalendarView />
         </>
       )}
+      <AppFooter />
       {showOnboarding && <OnboardingModal onDismiss={dismissOnboarding} />}
     </div>
   );
