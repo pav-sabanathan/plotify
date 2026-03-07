@@ -68,8 +68,8 @@ const AddShowSearch = () => {
     platform: '' as Platform | '',
     releaseDay: 1,
     releaseTime: '20:00',
-    season: 1,
-    episode: 1,
+    season: '' as string,
+    episode: '' as string,
   });
   const [errors, setErrors] = useState<{ name?: string; platform?: string }>({});
 
@@ -140,6 +140,9 @@ const AddShowSearch = () => {
     if (daysUntilRelease < 0) daysUntilRelease += 7;
     if (daysUntilRelease === 0) daysUntilRelease = 0; // Today is the release day
 
+    const seasonNum = manualForm.season === '' ? 1 : parseInt(manualForm.season, 10) || 1;
+    const episodeNum = manualForm.episode === '' ? 1 : parseInt(manualForm.episode, 10) || 1;
+
     const episodes = Array.from({ length: 10 }, (_, i) => {
       const epDate = new Date(today);
       epDate.setDate(today.getDate() + daysUntilRelease + i * 7);
@@ -147,10 +150,10 @@ const AddShowSearch = () => {
       const month = String(epDate.getMonth() + 1).padStart(2, '0');
       const day = String(epDate.getDate()).padStart(2, '0');
       return {
-        id: `s${manualForm.season}e${manualForm.episode + i}`,
-        season: manualForm.season,
-        episode: manualForm.episode + i,
-        title: `Episode ${manualForm.episode + i}`,
+        id: `s${seasonNum}e${episodeNum + i}`,
+        season: seasonNum,
+        episode: episodeNum + i,
+        title: `Episode ${episodeNum + i}`,
         airDate: `${year}-${month}-${day}`,
       };
     });
@@ -172,7 +175,7 @@ const AddShowSearch = () => {
       className: 'bg-platform-prime/90 border-platform-prime text-foreground',
       duration: 2000,
     });
-    setManualForm({ name: '', platform: '', releaseDay: 1, releaseTime: '20:00', season: 1, episode: 1 });
+    setManualForm({ name: '', platform: '', releaseDay: 1, releaseTime: '20:00', season: '', episode: '' });
     setErrors({});
     setShowManual(false);
   };
@@ -306,20 +309,28 @@ const AddShowSearch = () => {
             <div>
               <label className="text-xs text-muted-foreground">Season</label>
               <input
-                type="number"
-                min={1}
+                type="text"
+                inputMode="numeric"
                 value={manualForm.season}
-                onChange={e => setManualForm({ ...manualForm, season: Number(e.target.value) })}
+                onChange={e => {
+                  const val = e.target.value.replace(/[^0-9]/g, '');
+                  setManualForm({ ...manualForm, season: val });
+                }}
+                placeholder="1"
                 className="w-full rounded-lg bg-surface-2 border-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
             <div>
               <label className="text-xs text-muted-foreground">Current Episode</label>
               <input
-                type="number"
-                min={1}
+                type="text"
+                inputMode="numeric"
                 value={manualForm.episode}
-                onChange={e => setManualForm({ ...manualForm, episode: Number(e.target.value) })}
+                onChange={e => {
+                  const val = e.target.value.replace(/[^0-9]/g, '');
+                  setManualForm({ ...manualForm, episode: val });
+                }}
+                placeholder="1"
                 className="w-full rounded-lg bg-surface-2 border-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
