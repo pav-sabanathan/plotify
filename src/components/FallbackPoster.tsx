@@ -8,8 +8,18 @@ interface FallbackPosterProps {
   className?: string;
 }
 
+const EXCLUDED_WORDS = new Set(['the', 'a', 'an', 'of', 'in', 'on', 'at', 'and', 'or', 'but']);
+
+const getInitials = (name: string): string => {
+  const words = name.trim().split(/\s+/);
+  const significant = words.filter(w => !EXCLUDED_WORDS.has(w.toLowerCase()));
+  const source = significant.length > 0 ? significant : words;
+  if (source.length === 1) return source[0].charAt(0).toUpperCase();
+  return source.map(w => w.charAt(0).toUpperCase()).join('.') + '.';
+};
+
 const FallbackPoster = ({ name, platform, className }: FallbackPosterProps) => {
-  const firstLetter = name.trim().charAt(0).toUpperCase() || '?';
+  const initials = getInitials(name) || '?';
 
   return (
     <div
@@ -20,7 +30,7 @@ const FallbackPoster = ({ name, platform, className }: FallbackPosterProps) => {
       )}
     >
       <Tv className="h-5 w-5 text-muted-foreground mb-1" />
-      <span className="text-xl font-bold text-foreground">{firstLetter}</span>
+      <span className={cn('font-bold text-foreground', initials.length > 4 ? 'text-sm' : initials.length > 2 ? 'text-base' : 'text-xl')}>{initials}</span>
     </div>
   );
 };
