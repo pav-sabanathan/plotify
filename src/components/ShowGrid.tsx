@@ -2,9 +2,12 @@ import { useNavigate } from 'react-router-dom';
 import { useShows } from '@/context/ShowsContext';
 import PlatformBadge from './PlatformBadge';
 import StatusBadge from './StatusBadge';
+import FallbackPoster from './FallbackPoster';
 import { Pause, Play, Trash2, Tv } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PLATFORM_BORDER_COLORS, TrackedShow } from '@/types/show';
+
+const isPlaceholder = (poster: string) => !poster || poster === '/placeholder.svg';
 
 const getDisplayStatus = (show: TrackedShow) => {
   if (show.releaseType === 'full-season' && show.status !== 'ended') {
