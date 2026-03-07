@@ -3,7 +3,10 @@ import { useShows } from '@/context/ShowsContext';
 import { differenceInDays, isAfter, isToday, parseISO } from 'date-fns';
 import { PLATFORM_BORDER_COLORS } from '@/types/show';
 import PlatformBadge from './PlatformBadge';
+import FallbackPoster from './FallbackPoster';
 import { cn } from '@/lib/utils';
+
+const isPlaceholder = (poster: string) => !poster || poster === '/placeholder.svg';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface UpcomingEpisode {
