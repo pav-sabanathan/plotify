@@ -68,8 +68,8 @@ const AddShowSearch = () => {
     platform: '' as Platform | '',
     releaseDay: 1,
     releaseTime: '20:00',
-    season: 1,
-    episode: 1,
+    season: '' as string,
+    episode: '' as string,
   });
   const [errors, setErrors] = useState<{ name?: string; platform?: string }>({});
 
