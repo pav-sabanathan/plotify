@@ -15,14 +15,7 @@ const getDisplayStatus = (show: TrackedShow) => {
 const ShowGrid = () => {
   const { shows, removeShow, togglePause } = useShows();
 
-  if (shows.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground">
-        <p className="text-lg font-medium">No shows tracked yet</p>
-        <p className="text-sm mt-1">Add some shows to get started!</p>
-      </div>
-    );
-  }
+  if (shows.length === 0) return null;
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
