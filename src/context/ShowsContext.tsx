@@ -1,6 +1,8 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
-import { TrackedShow, Platform } from '@/types/show';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { TrackedShow } from '@/types/show';
 import { SAMPLE_SHOWS } from '@/data/sampleShows';
+
+const STORAGE_KEY = 'plotify-shows';
 
 interface ShowsContextType {
   shows: TrackedShow[];
@@ -11,8 +13,21 @@ interface ShowsContextType {
 
 const ShowsContext = createContext<ShowsContextType | undefined>(undefined);
 
+const loadShows = (): TrackedShow[] => {
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (stored !== null) {
+    try { return JSON.parse(stored); } catch { return []; }
+  }
+  // First visit — seed with sample data
+  return SAMPLE_SHOWS;
+};
+
 export const ShowsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [shows, setShows] = useState<TrackedShow[]>(SAMPLE_SHOWS);
+  const [shows, setShows] = useState<TrackedShow[]>(loadShows);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(shows));
+  }, [shows]);
 
   const addShow = useCallback((show: TrackedShow) => {
     setShows(prev => [...prev, show]);
