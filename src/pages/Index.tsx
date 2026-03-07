@@ -4,8 +4,7 @@ import UpNextStrip from '@/components/UpNextStrip';
 import CalendarView from '@/components/CalendarView';
 import EmptyDashboard from '@/components/EmptyDashboard';
 import OnboardingModal from '@/components/OnboardingModal';
-import AppFooter from '@/components/AppFooter';
-import plotifyLogo from '@/assets/plotify-logo-full.png';
+import AppHeader from '@/components/AppHeader';
 
 const Dashboard = () => {
   const { shows } = useShows();
