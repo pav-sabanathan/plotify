@@ -1,7 +1,8 @@
+import { useNavigate } from 'react-router-dom';
 import { useShows } from '@/context/ShowsContext';
 import PlatformBadge from './PlatformBadge';
 import StatusBadge from './StatusBadge';
-import { Pause, Play, Trash2 } from 'lucide-react';
+import { Pause, Play, Trash2, Tv } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PLATFORM_BORDER_COLORS, TrackedShow } from '@/types/show';
 
@@ -14,12 +15,20 @@ const getDisplayStatus = (show: TrackedShow) => {
 
 const ShowGrid = () => {
   const { shows, removeShow, togglePause } = useShows();
+  const navigate = useNavigate();
 
   if (shows.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground">
-        <p className="text-lg font-medium">No shows tracked yet</p>
-        <p className="text-sm mt-1">Add some shows to get started!</p>
+      <div className="flex flex-col items-center justify-center py-24 text-center px-6">
+        <Tv className="h-12 w-12 text-muted-foreground/40 mb-4" />
+        <h2 className="text-lg font-semibold mb-1">No shows added yet</h2>
+        <p className="text-sm text-muted-foreground mb-6">Your tracked shows will appear here</p>
+        <button
+          onClick={() => navigate('/add')}
+          className="rounded-xl px-5 py-2.5 text-sm font-semibold bg-platform-manual text-foreground hover:opacity-90 transition-opacity"
+        >
+          Add a Show
+        </button>
       </div>
     );
   }
