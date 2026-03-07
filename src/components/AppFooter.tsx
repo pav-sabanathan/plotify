@@ -17,12 +17,6 @@ const AppFooter = () => {
           <span>·</span>
           <Link to="/terms" className="hover:text-muted-foreground transition-colors">Terms of Service</Link>
         </div>
-        <button
-          onClick={() => { localStorage.clear(); sessionStorage.clear(); localStorage.setItem('plotify-shows', '[]'); window.location.reload(); }}
-          className="text-[9px] text-muted-foreground/20 hover:text-muted-foreground/40 transition-colors"
-        >
-          Reset app data
-        </button>
       </footer>
       {showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} />}
     </>

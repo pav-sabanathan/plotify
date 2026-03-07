@@ -9,7 +9,7 @@ import AppFooter from '@/components/AppFooter';
 const Dashboard = () => {
   const { shows } = useShows();
   const [showOnboarding, setShowOnboarding] = useState(() => {
-    return !localStorage.getItem('plotify-onboarding-done') && shows.length === 0;
+    return !localStorage.getItem('plotify-onboarding-done') && !localStorage.getItem('plotify-shows');
   });
 
   const dismissOnboarding = () => {

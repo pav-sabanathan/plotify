@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { TrackedShow } from '@/types/show';
-import { SAMPLE_SHOWS } from '@/data/sampleShows';
 
 const STORAGE_KEY = 'plotify-shows';
 
@@ -18,8 +17,7 @@ const loadShows = (): TrackedShow[] => {
   if (stored !== null) {
     try { return JSON.parse(stored); } catch { return []; }
   }
-  // First visit — seed with sample data
-  return SAMPLE_SHOWS;
+  return [];
 };
 
 export const ShowsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
