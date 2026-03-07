@@ -150,11 +150,15 @@ const UpNextStrip = () => {
               style={{ animationDelay: `${i * 60}ms` }}
             >
               <div className="flex gap-3 p-3">
-                <img
-                  src={item.poster}
-                  alt={item.showName}
-                  className="w-16 h-24 rounded-md object-cover flex-shrink-0"
-                />
+                {isPlaceholder(item.poster) ? (
+                  <FallbackPoster name={item.showName} platform={item.platform as any} className="w-16 h-24 flex-shrink-0" />
+                ) : (
+                  <img
+                    src={item.poster}
+                    alt={item.showName}
+                    className="w-16 h-24 rounded-md object-cover flex-shrink-0"
+                  />
+                )}
                 <div className="flex flex-col justify-between min-w-0 flex-1">
                   <div>
                     <p className="font-semibold text-sm truncate">{item.showName}</p>

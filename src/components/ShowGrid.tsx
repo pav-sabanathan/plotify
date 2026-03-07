@@ -50,12 +50,16 @@ const ShowGrid = () => {
           style={{ animationDelay: `${i * 50}ms` }}
         >
           <div className="aspect-[2/3] overflow-hidden">
-            <img
-              src={show.poster}
-              alt={show.name}
-              className="w-full h-full object-cover"
-              loading="lazy"
-            />
+            {isPlaceholder(show.poster) ? (
+              <FallbackPoster name={show.name} platform={show.platform} className="w-full h-full" />
+            ) : (
+              <img
+                src={show.poster}
+                alt={show.name}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            )}
           </div>
           <div className="p-3 space-y-2">
             <p className="font-semibold text-sm truncate">{show.name}</p>
