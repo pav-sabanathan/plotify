@@ -9,6 +9,9 @@ import { PLATFORM_COLORS, PLATFORM_LABELS } from '@/types/show';
 import { cn } from '@/lib/utils';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import PlatformBadge from './PlatformBadge';
+import FallbackPoster from './FallbackPoster';
+
+const isPlaceholder = (poster: string) => !poster || poster === '/placeholder.svg';
 
 type CalendarMode = 'week' | 'month';
 
