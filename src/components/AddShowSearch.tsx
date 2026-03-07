@@ -3,7 +3,7 @@ import { useShows } from '@/context/ShowsContext';
 import { TrackedShow, Platform, PLATFORM_LABELS } from '@/types/show';
 import { Search, Plus } from 'lucide-react';
 import { format, addDays } from 'date-fns';
-import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 import PlatformBadge from './PlatformBadge';
 
 // Mock search results for demo
@@ -71,6 +71,7 @@ const AddShowSearch = () => {
     season: 1,
     episode: 1,
   });
+  const [errors, setErrors] = useState<{ name?: string; platform?: string }>({});
 
   const filtered = query.trim().length > 0
     ? MOCK_RESULTS.filter(r =>
@@ -80,12 +81,45 @@ const AddShowSearch = () => {
     : [];
 
   const handleTrack = (result: Omit<TrackedShow, 'paused'>) => {
+    if (shows.some(s => s.name.toLowerCase() === result.name.toLowerCase())) {
+      toast.warning(`${result.name} is already in your watchlist`, { duration: 3000 });
+      return;
+    }
     addShow({ ...result, paused: false });
+    toast.success(`✓ ${result.name} added to your watchlist`, { duration: 2000 });
     setQuery('');
   };
 
+  const validateField = (field: 'name' | 'platform') => {
+    const newErrors = { ...errors };
+    if (field === 'name' && !manualForm.name.trim()) {
+      newErrors.name = 'Please enter a show name';
+    } else if (field === 'name') {
+      delete newErrors.name;
+    }
+    if (field === 'platform' && manualForm.platform === 'manual') {
+      // manual is a valid platform, so no error needed unless we want to force selection
+      delete newErrors.platform;
+    }
+    setErrors(newErrors);
+  };
+
   const handleManualAdd = () => {
-    if (!manualForm.name.trim()) return;
+    const newErrors: { name?: string } = {};
+    if (!manualForm.name.trim()) {
+      newErrors.name = 'Please enter a show name';
+    }
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    // Duplicate check
+    if (shows.some(s => s.name.toLowerCase() === manualForm.name.trim().toLowerCase())) {
+      toast.warning(`${manualForm.name} is already in your watchlist`, { duration: 3000 });
+      return;
+    }
+
     const id = manualForm.name.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now();
     const episodes = Array.from({ length: 10 }, (_, i) => ({
       id: `s${manualForm.season}e${manualForm.episode + i}`,
@@ -106,7 +140,9 @@ const AddShowSearch = () => {
       releaseTime: manualForm.releaseTime,
       episodes,
     });
+    toast.success(`✓ ${manualForm.name} added to your watchlist`, { duration: 2000 });
     setManualForm({ name: '', platform: 'manual', releaseDay: 1, releaseTime: '20:00', season: 1, episode: 1 });
+    setErrors({});
     setShowManual(false);
   };
 
@@ -149,12 +185,20 @@ const AddShowSearch = () => {
       )}
 
       {query.trim().length > 0 && filtered.length === 0 && (
-        <p className="text-sm text-muted-foreground text-center py-4">
-          No results found. Try the manual entry below.
-        </p>
+        <div className="flex flex-col items-center py-8 text-center space-y-3">
+          <Search className="h-10 w-10 text-muted-foreground/40" />
+          <p className="text-sm font-medium">No results for &lsquo;{query}&rsquo;</p>
+          <p className="text-xs text-muted-foreground">Try a different title or add it manually</p>
+          <button
+            onClick={() => { setShowManual(true); setQuery(''); }}
+            className="rounded-lg bg-platform-manual text-white px-4 py-2 text-xs font-semibold hover:opacity-90 transition-opacity"
+          >
+            Add Manually
+          </button>
+        </div>
       )}
 
-      {/* Manual entry */}
+      {/* Manual entry toggle */}
       <button
         onClick={() => setShowManual(!showManual)}
         className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-full justify-center py-2"
@@ -165,17 +209,21 @@ const AddShowSearch = () => {
 
       {showManual && (
         <div className="rounded-xl bg-card border p-4 space-y-3 animate-fade-in">
-          <input
-            type="text"
-            value={manualForm.name}
-            onChange={e => setManualForm({ ...manualForm, name: e.target.value })}
-            placeholder="Show name"
-            className="w-full rounded-lg bg-surface-2 border-none px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          />
+          <div>
+            <input
+              type="text"
+              value={manualForm.name}
+              onChange={e => { setManualForm({ ...manualForm, name: e.target.value }); if (errors.name) setErrors({ ...errors, name: undefined }); }}
+              onBlur={() => validateField('name')}
+              placeholder="Show name"
+              className={`w-full rounded-lg bg-secondary border px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring ${errors.name ? 'border-destructive' : 'border-transparent'}`}
+            />
+            {errors.name && <p className="text-xs text-destructive mt-1">{errors.name}</p>}
+          </div>
           <select
             value={manualForm.platform}
             onChange={e => setManualForm({ ...manualForm, platform: e.target.value as Platform })}
-            className="w-full rounded-lg bg-surface-2 border-none px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-full rounded-lg bg-secondary border-none px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           >
             {Object.entries(PLATFORM_LABELS).map(([key, label]) => (
               <option key={key} value={key}>{label}</option>
@@ -187,7 +235,7 @@ const AddShowSearch = () => {
               <select
                 value={manualForm.releaseDay}
                 onChange={e => setManualForm({ ...manualForm, releaseDay: Number(e.target.value) })}
-                className="w-full rounded-lg bg-surface-2 border-none px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-lg bg-secondary border-none px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((d, i) => (
                   <option key={i} value={i}>{d}</option>
@@ -200,7 +248,7 @@ const AddShowSearch = () => {
                 type="time"
                 value={manualForm.releaseTime}
                 onChange={e => setManualForm({ ...manualForm, releaseTime: e.target.value })}
-                className="w-full rounded-lg bg-surface-2 border-none px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-lg bg-secondary border-none px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
           </div>
@@ -212,7 +260,7 @@ const AddShowSearch = () => {
                 min={1}
                 value={manualForm.season}
                 onChange={e => setManualForm({ ...manualForm, season: Number(e.target.value) })}
-                className="w-full rounded-lg bg-surface-2 border-none px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-lg bg-secondary border-none px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
             <div>
@@ -222,14 +270,13 @@ const AddShowSearch = () => {
                 min={1}
                 value={manualForm.episode}
                 onChange={e => setManualForm({ ...manualForm, episode: Number(e.target.value) })}
-                className="w-full rounded-lg bg-surface-2 border-none px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-lg bg-secondary border-none px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
           </div>
           <button
             onClick={handleManualAdd}
-            disabled={!manualForm.name.trim()}
-            className="w-full rounded-lg bg-platform-manual text-white py-2 text-sm font-semibold hover:opacity-90 disabled:opacity-40 transition-opacity"
+            className="w-full rounded-lg bg-platform-manual text-white py-2 text-sm font-semibold hover:opacity-90 transition-opacity"
           >
             Add Show
           </button>
