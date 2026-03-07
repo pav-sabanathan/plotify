@@ -140,6 +140,9 @@ const AddShowSearch = () => {
     if (daysUntilRelease < 0) daysUntilRelease += 7;
     if (daysUntilRelease === 0) daysUntilRelease = 0; // Today is the release day
 
+    const seasonNum = manualForm.season === '' ? 1 : parseInt(manualForm.season, 10) || 1;
+    const episodeNum = manualForm.episode === '' ? 1 : parseInt(manualForm.episode, 10) || 1;
+
     const episodes = Array.from({ length: 10 }, (_, i) => {
       const epDate = new Date(today);
       epDate.setDate(today.getDate() + daysUntilRelease + i * 7);
@@ -147,10 +150,10 @@ const AddShowSearch = () => {
       const month = String(epDate.getMonth() + 1).padStart(2, '0');
       const day = String(epDate.getDate()).padStart(2, '0');
       return {
-        id: `s${manualForm.season}e${manualForm.episode + i}`,
-        season: manualForm.season,
-        episode: manualForm.episode + i,
-        title: `Episode ${manualForm.episode + i}`,
+        id: `s${seasonNum}e${episodeNum + i}`,
+        season: seasonNum,
+        episode: episodeNum + i,
+        title: `Episode ${episodeNum + i}`,
         airDate: `${year}-${month}-${day}`,
       };
     });
