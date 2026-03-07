@@ -309,20 +309,28 @@ const AddShowSearch = () => {
             <div>
               <label className="text-xs text-muted-foreground">Season</label>
               <input
-                type="number"
-                min={1}
+                type="text"
+                inputMode="numeric"
                 value={manualForm.season}
-                onChange={e => setManualForm({ ...manualForm, season: Number(e.target.value) })}
+                onChange={e => {
+                  const val = e.target.value.replace(/[^0-9]/g, '');
+                  setManualForm({ ...manualForm, season: val });
+                }}
+                placeholder="1"
                 className="w-full rounded-lg bg-surface-2 border-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
             <div>
               <label className="text-xs text-muted-foreground">Current Episode</label>
               <input
-                type="number"
-                min={1}
+                type="text"
+                inputMode="numeric"
                 value={manualForm.episode}
-                onChange={e => setManualForm({ ...manualForm, episode: Number(e.target.value) })}
+                onChange={e => {
+                  const val = e.target.value.replace(/[^0-9]/g, '');
+                  setManualForm({ ...manualForm, episode: val });
+                }}
+                placeholder="1"
                 className="w-full rounded-lg bg-surface-2 border-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
