@@ -7,14 +7,22 @@ const AppFooter = () => {
 
   return (
     <>
-      <footer className="flex items-center justify-center gap-3 py-4 text-[11px] text-muted-foreground/50">
-        <button onClick={() => setShowFeedback(true)} className="hover:text-muted-foreground transition-colors">
-          Send feedback
+      <footer className="flex flex-col items-center gap-2 py-4 text-[11px] text-muted-foreground/50">
+        <div className="flex items-center gap-3">
+          <button onClick={() => setShowFeedback(true)} className="hover:text-muted-foreground transition-colors">
+            Send feedback
+          </button>
+          <span>·</span>
+          <Link to="/privacy" className="hover:text-muted-foreground transition-colors">Privacy Policy</Link>
+          <span>·</span>
+          <Link to="/terms" className="hover:text-muted-foreground transition-colors">Terms of Service</Link>
+        </div>
+        <button
+          onClick={() => { localStorage.clear(); sessionStorage.clear(); window.location.reload(); }}
+          className="text-[9px] text-muted-foreground/20 hover:text-muted-foreground/40 transition-colors"
+        >
+          Reset app data
         </button>
-        <span>·</span>
-        <Link to="/privacy" className="hover:text-muted-foreground transition-colors">Privacy Policy</Link>
-        <span>·</span>
-        <Link to="/terms" className="hover:text-muted-foreground transition-colors">Terms of Service</Link>
       </footer>
       {showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} />}
     </>
