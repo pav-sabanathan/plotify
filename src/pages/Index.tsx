@@ -5,6 +5,7 @@ import CalendarView from '@/components/CalendarView';
 import EmptyDashboard from '@/components/EmptyDashboard';
 import OnboardingModal from '@/components/OnboardingModal';
 import AppHeader from '@/components/AppHeader';
+import AppFooter from '@/components/AppFooter';
 
 const Dashboard = () => {
   const { shows } = useShows();
