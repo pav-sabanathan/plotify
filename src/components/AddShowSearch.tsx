@@ -132,13 +132,28 @@ const AddShowSearch = () => {
     }
 
     const id = manualForm.name.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now();
-    const episodes = Array.from({ length: 10 }, (_, i) => ({
-      id: `s${manualForm.season}e${manualForm.episode + i}`,
-      season: manualForm.season,
-      episode: manualForm.episode + i,
-      title: `Episode ${manualForm.episode + i}`,
-      airDate: format(addDays(new Date(), i * 7), 'yyyy-MM-dd'),
-    }));
+    // Find the next occurrence of the selected weekday
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const currentDay = today.getDay();
+    let daysUntilRelease = manualForm.releaseDay - currentDay;
+    if (daysUntilRelease < 0) daysUntilRelease += 7;
+    if (daysUntilRelease === 0) daysUntilRelease = 0; // Today is the release day
+
+    const episodes = Array.from({ length: 10 }, (_, i) => {
+      const epDate = new Date(today);
+      epDate.setDate(today.getDate() + daysUntilRelease + i * 7);
+      const year = epDate.getFullYear();
+      const month = String(epDate.getMonth() + 1).padStart(2, '0');
+      const day = String(epDate.getDate()).padStart(2, '0');
+      return {
+        id: `s${manualForm.season}e${manualForm.episode + i}`,
+        season: manualForm.season,
+        episode: manualForm.episode + i,
+        title: `Episode ${manualForm.episode + i}`,
+        airDate: `${year}-${month}-${day}`,
+      };
+    });
     const showName = manualForm.name.trim();
     addShow({
       id,
