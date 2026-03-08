@@ -10,6 +10,7 @@ import MyShows from "./pages/MyShows";
 import AddShow from "./pages/AddShow";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
