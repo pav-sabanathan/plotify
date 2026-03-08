@@ -5,7 +5,7 @@ const AppHeader = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex justify-center items-center py-3 md:py-6">
+    <div className="flex justify-center items-center py-2 md:py-6">
       <img
         src={plotifyLogo}
         alt="Plotify"
