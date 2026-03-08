@@ -6,6 +6,7 @@ const tabs = [
   { path: '/', label: 'Home', icon: Home },
   { path: '/my-shows', label: 'My Shows', icon: Tv },
   { path: '/add', label: 'Add Show', icon: PlusCircle },
+  { path: '/settings', label: 'Settings', icon: Settings },
 ];
 
 const BottomNav = () => {

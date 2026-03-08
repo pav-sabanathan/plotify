@@ -29,6 +29,7 @@ const App = () => (
               <Route path="/add" element={<AddShow />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
+              <Route path="/settings" element={<Settings />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <BottomNav />
