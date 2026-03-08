@@ -7,7 +7,7 @@ const AppFooter = () => {
 
   return (
     <>
-      <footer className="flex flex-col items-center gap-2 py-4 text-[11px] text-muted-foreground/50">
+      <footer className="flex flex-col items-center gap-2 py-3 md:py-4 text-[11px] text-muted-foreground/50">
         <div className="flex items-center gap-3">
           <button onClick={() => setShowFeedback(true)} className="hover:text-muted-foreground transition-colors">
             Send feedback
