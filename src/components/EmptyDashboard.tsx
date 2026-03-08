@@ -1,12 +1,12 @@
 import { useNavigate } from 'react-router-dom';
-import plotifyLogo from '@/assets/plotify-logo.png';
+import { Tv } from 'lucide-react';
 
 const EmptyDashboard = () => {
   const navigate = useNavigate();
 
   return (
     <div className="flex flex-col items-center justify-center py-24 text-center px-6">
-      <img src={plotifyLogo} alt="Plotify" className="w-16 h-16 rounded-xl object-contain mb-6 opacity-80" />
+      <Tv size={64} className="text-[#4B5563] mb-6" />
       <h2 className="text-xl font-bold mb-2">Nothing on your radar yet</h2>
       <p className="text-sm text-muted-foreground max-w-xs leading-relaxed mb-8">
         Add your first show to start tracking episode releases across all your platforms
