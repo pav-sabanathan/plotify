@@ -5,11 +5,11 @@ const AppHeader = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex justify-center py-4 -mx-4 -mt-6 mb-2 bg-[#111111] border-b border-[#1f1f1f]">
+    <div className="flex justify-center items-center py-6">
       <img
         src={plotifyLogo}
         alt="Plotify"
-        className="h-16 cursor-pointer hover:opacity-80 transition-opacity"
+        className="w-[120px] cursor-pointer hover:opacity-80 transition-opacity"
         onClick={() => navigate('/')}
       />
     </div>
