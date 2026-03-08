@@ -5,7 +5,7 @@ const EmptyDashboard = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-col items-center justify-start flex-1 text-center px-6 pt-0 pb-4 md:py-24 gap-3 md:gap-4 min-h-0">
+    <div className="flex flex-col items-center justify-center flex-1 text-center px-6 pt-5 pb-[120px] md:py-24 gap-3 md:gap-4 min-h-0">
       <Tv size={48} className="text-muted-foreground md:!w-16 md:!h-16" />
       <h2 className="text-xl font-bold">Nothing on your radar yet</h2>
       <p className="text-sm text-muted-foreground max-w-xs leading-relaxed">
