@@ -21,12 +21,12 @@ const Dashboard = () => {
   const isEmpty = shows.length === 0;
 
   return (
-    <div className={`px-4 max-w-4xl mx-auto ${isEmpty ? 'relative min-h-[100vh] flex flex-col' : 'space-y-6 pb-20 pt-6'}`}>
+    <div className={`px-4 max-w-4xl mx-auto ${isEmpty ? 'flex flex-col min-h-[100vh]' : 'space-y-6 pb-20 pt-6'}`}>
       <AppHeader />
       {isEmpty ? (
         <>
           <EmptyDashboard />
-          <div className="absolute bottom-[72px] left-0 right-0 text-center md:static">
+          <div className="hidden md:block">
             <AppFooter />
           </div>
         </>

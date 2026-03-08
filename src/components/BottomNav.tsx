@@ -1,11 +1,12 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, Tv, PlusCircle } from 'lucide-react';
+import { Home, Tv, PlusCircle, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const tabs = [
   { path: '/', label: 'Home', icon: Home },
   { path: '/my-shows', label: 'My Shows', icon: Tv },
   { path: '/add', label: 'Add Show', icon: PlusCircle },
+  { path: '/settings', label: 'Settings', icon: Settings },
 ];
 
 const BottomNav = () => {
