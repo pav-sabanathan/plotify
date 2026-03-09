@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight, MessageSquare, Shield, FileText } from 'lucide-react';
-import AppHeader from '@/components/AppHeader';
 import FeedbackModal from '@/components/FeedbackModal';
 
 const Settings = () => {
@@ -15,9 +14,7 @@ const Settings = () => {
   ];
 
   return (
-    <div className="px-4 max-w-4xl mx-auto pb-20 pt-6 space-y-6">
-      <AppHeader />
-
+    <div className="px-4 max-w-4xl mx-auto pb-20 space-y-6">
       <div>
         <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 px-1">About</h2>
         <div className="rounded-xl border border-border bg-card overflow-hidden divide-y divide-border">
