@@ -23,6 +23,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <div className="min-h-screen bg-background">
+            <AppHeader />
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/my-shows" element={<MyShows />} />
