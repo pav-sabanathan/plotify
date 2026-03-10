@@ -28,7 +28,7 @@ export interface TrackedShow {
 export const PLATFORM_LABELS: Record<Platform, string> = {
   netflix: 'Netflix',
   disney: 'Disney+',
-  apple: 'Apple TV+',
+  apple: 'Apple TV',
   prime: 'Prime Video',
   bbc: 'BBC iPlayer',
   manual: 'Manual',
