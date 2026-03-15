@@ -256,7 +256,18 @@ const AddShowSearch = () => {
       </button>
 
       {showManual && (
-        <div className="rounded-xl bg-card border p-4 space-y-3 animate-fade-in">
+        <div className="rounded-xl bg-card border p-4 space-y-3 animate-fade-in relative">
+          <button
+            onClick={() => {
+              setShowManual(false);
+              setManualForm({ name: '', platform: '', releaseDay: 1, releaseTime: '20:00', season: '', episode: '' });
+              setErrors({});
+            }}
+            className="absolute top-3 right-3 text-muted-foreground hover:text-foreground transition-colors"
+            aria-label="Dismiss manual form"
+          >
+            <XCircle className="h-5 w-5" />
+          </button>
           {/* Name field */}
           <div>
             <input
