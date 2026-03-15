@@ -3,7 +3,7 @@ import { useShows } from '@/context/ShowsContext';
 import PlatformBadge from './PlatformBadge';
 import StatusBadge from './StatusBadge';
 import FallbackPoster from './FallbackPoster';
-import { Pause, Play, Trash2, Tv, CalendarDown } from 'lucide-react';
+import { Pause, Play, Trash2, Tv, CalendarPlus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PLATFORM_BORDER_COLORS, PLATFORM_COLORS, TrackedShow } from '@/types/show';
 import { downloadICS } from '@/lib/icsExport';
