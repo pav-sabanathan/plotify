@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useShows } from '@/context/ShowsContext';
 import { TrackedShow, Platform, PLATFORM_LABELS } from '@/types/show';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, XCircle } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 import PlatformBadge from './PlatformBadge';
 import FallbackPoster from './FallbackPoster';
@@ -62,18 +62,16 @@ function getScheduleLabel(show: MockShow): string {
 const searchableShows = MOCK_SHOW_DATABASE.filter(s => !s.manualOnly);
 
 const AddShowSearch = () => {
-  const { shows, addShow } = useShows();
-  const [query, setQuery] = useState('');
-  const [showManual, setShowManual] = useState(false);
-  const [manualForm, setManualForm] = useState({
-    name: '',
-    platform: '' as Platform | '',
-    releaseDay: 1,
-    releaseTime: '20:00',
-    season: '' as string,
-    episode: '' as string,
-  });
+  const { shows, addShow, addShowFormRef } = useShows();
+  const [query, setQuery] = useState(addShowFormRef.current.query);
+  const [showManual, setShowManual] = useState(addShowFormRef.current.showManual);
+  const [manualForm, setManualForm] = useState(addShowFormRef.current.manualForm);
   const [errors, setErrors] = useState<{ name?: string; platform?: string }>({});
+
+  // Sync state back to ref on every change so it persists across navigation
+  useEffect(() => {
+    addShowFormRef.current = { query, showManual, manualForm };
+  }, [query, showManual, manualForm, addShowFormRef]);
 
   const filtered = query.trim().length >= 2
     ? searchableShows.filter(r =>
@@ -258,7 +256,18 @@ const AddShowSearch = () => {
       </button>
 
       {showManual && (
-        <div className="rounded-xl bg-card border p-4 space-y-3 animate-fade-in">
+        <div className="rounded-xl bg-card border p-4 space-y-3 animate-fade-in relative">
+          <button
+            onClick={() => {
+              setShowManual(false);
+              setManualForm({ name: '', platform: '', releaseDay: 1, releaseTime: '20:00', season: '', episode: '' });
+              setErrors({});
+            }}
+            className="absolute top-3 right-3 text-muted-foreground hover:text-foreground transition-colors"
+            aria-label="Dismiss manual form"
+          >
+            <XCircle className="h-5 w-5" />
+          </button>
           {/* Name field */}
           <div>
             <input
