@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ShowsProvider } from "./context/ShowsContext";
 import AppHeader from "./components/AppHeader";
 import BottomNav from "./components/BottomNav";
+import ShowDetailPanel from "./components/ShowDetailPanel";
 import Index from "./pages/Index";
 import MyShows from "./pages/MyShows";
 import AddShow from "./pages/AddShow";
@@ -36,6 +37,7 @@ const App = () => (
             </Routes>
             <BottomNav />
           </div>
+          <ShowDetailPanel />
         </BrowserRouter>
       </ShowsProvider>
     </TooltipProvider>
