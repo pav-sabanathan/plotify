@@ -81,3 +81,27 @@
     display: none;
   }
 }
+
+@keyframes slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+@keyframes slide-left {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+@keyframes episode-highlight {
+  0%, 100% { background-color: transparent; }
+  30% { background-color: hsl(var(--accent)); }
+  70% { background-color: hsl(var(--accent)); }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+.animate-slide-left {
+  animation: slide-left 0.3s ease-out;
+}
+.animate-episode-highlight {
+  animation: episode-highlight 1.5s ease-in-out;
+}
