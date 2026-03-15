@@ -62,18 +62,16 @@ function getScheduleLabel(show: MockShow): string {
 const searchableShows = MOCK_SHOW_DATABASE.filter(s => !s.manualOnly);
 
 const AddShowSearch = () => {
-  const { shows, addShow } = useShows();
-  const [query, setQuery] = useState('');
-  const [showManual, setShowManual] = useState(false);
-  const [manualForm, setManualForm] = useState({
-    name: '',
-    platform: '' as Platform | '',
-    releaseDay: 1,
-    releaseTime: '20:00',
-    season: '' as string,
-    episode: '' as string,
-  });
+  const { shows, addShow, addShowFormRef } = useShows();
+  const [query, setQuery] = useState(addShowFormRef.current.query);
+  const [showManual, setShowManual] = useState(addShowFormRef.current.showManual);
+  const [manualForm, setManualForm] = useState(addShowFormRef.current.manualForm);
   const [errors, setErrors] = useState<{ name?: string; platform?: string }>({});
+
+  // Sync state back to ref on every change so it persists across navigation
+  useEffect(() => {
+    addShowFormRef.current = { query, showManual, manualForm };
+  }, [query, showManual, manualForm, addShowFormRef]);
 
   const filtered = query.trim().length >= 2
     ? searchableShows.filter(r =>
