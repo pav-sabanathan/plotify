@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useShows } from '@/context/ShowsContext';
 import { TrackedShow, Platform, PLATFORM_LABELS } from '@/types/show';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, XCircle } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 import PlatformBadge from './PlatformBadge';
 import FallbackPoster from './FallbackPoster';

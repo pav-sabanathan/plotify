@@ -1,13 +1,33 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { TrackedShow } from '@/types/show';
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
+import { TrackedShow, Platform } from '@/types/show';
 
 const STORAGE_KEY = 'plotify-shows';
+
+export interface AddShowFormState {
+  query: string;
+  showManual: boolean;
+  manualForm: {
+    name: string;
+    platform: Platform | '';
+    releaseDay: number;
+    releaseTime: string;
+    season: string;
+    episode: string;
+  };
+}
+
+const DEFAULT_ADD_FORM: AddShowFormState = {
+  query: '',
+  showManual: false,
+  manualForm: { name: '', platform: '', releaseDay: 1, releaseTime: '20:00', season: '', episode: '' },
+};
 
 interface ShowsContextType {
   shows: TrackedShow[];
   addShow: (show: TrackedShow) => void;
   removeShow: (id: string) => void;
   togglePause: (id: string) => void;
+  addShowFormRef: React.MutableRefObject<AddShowFormState>;
 }
 
 const ShowsContext = createContext<ShowsContextType | undefined>(undefined);
@@ -22,6 +42,7 @@ const loadShows = (): TrackedShow[] => {
 
 export const ShowsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [shows, setShows] = useState<TrackedShow[]>(loadShows);
+  const addShowFormRef = useRef<AddShowFormState>({ ...DEFAULT_ADD_FORM });
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(shows));
@@ -40,7 +61,7 @@ export const ShowsProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, []);
 
   return (
-    <ShowsContext.Provider value={{ shows, addShow, removeShow, togglePause }}>
+    <ShowsContext.Provider value={{ shows, addShow, removeShow, togglePause, addShowFormRef }}>
       {children}
     </ShowsContext.Provider>
   );
