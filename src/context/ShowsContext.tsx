@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useCallback, useEffect, use
 import { TrackedShow, Platform } from '@/types/show';
 
 const STORAGE_KEY = 'plotify-shows';
+const WATCHED_KEY = 'plotify-watched';
 
 export interface AddShowFormState {
   query: string;
@@ -22,12 +23,26 @@ const DEFAULT_ADD_FORM: AddShowFormState = {
   manualForm: { name: '', platform: '', releaseDay: 1, releaseTime: '20:00', season: '', episode: '' },
 };
 
+// watched episodes stored as { [showId]: string[] } where strings are episode ids
+type WatchedMap = Record<string, string[]>;
+
+export interface ShowDetailTarget {
+  showId: string;
+  highlightEpisodeId?: string;
+}
+
 interface ShowsContextType {
   shows: TrackedShow[];
   addShow: (show: TrackedShow) => void;
   removeShow: (id: string) => void;
   togglePause: (id: string) => void;
   addShowFormRef: React.MutableRefObject<AddShowFormState>;
+  watchedEpisodes: WatchedMap;
+  toggleWatched: (showId: string, episodeId: string) => void;
+  markAllWatched: (showId: string) => void;
+  detailTarget: ShowDetailTarget | null;
+  openDetail: (target: ShowDetailTarget) => void;
+  closeDetail: () => void;
 }
 
 const ShowsContext = createContext<ShowsContextType | undefined>(undefined);
@@ -40,13 +55,27 @@ const loadShows = (): TrackedShow[] => {
   return [];
 };
 
+const loadWatched = (): WatchedMap => {
+  const stored = localStorage.getItem(WATCHED_KEY);
+  if (stored !== null) {
+    try { return JSON.parse(stored); } catch { return {}; }
+  }
+  return {};
+};
+
 export const ShowsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [shows, setShows] = useState<TrackedShow[]>(loadShows);
+  const [watchedEpisodes, setWatchedEpisodes] = useState<WatchedMap>(loadWatched);
+  const [detailTarget, setDetailTarget] = useState<ShowDetailTarget | null>(null);
   const addShowFormRef = useRef<AddShowFormState>({ ...DEFAULT_ADD_FORM });
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(shows));
   }, [shows]);
+
+  useEffect(() => {
+    localStorage.setItem(WATCHED_KEY, JSON.stringify(watchedEpisodes));
+  }, [watchedEpisodes]);
 
   const addShow = useCallback((show: TrackedShow) => {
     setShows(prev => [...prev, show]);
@@ -54,14 +83,45 @@ export const ShowsProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const removeShow = useCallback((id: string) => {
     setShows(prev => prev.filter(s => s.id !== id));
+    setWatchedEpisodes(prev => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
   }, []);
 
   const togglePause = useCallback((id: string) => {
     setShows(prev => prev.map(s => s.id === id ? { ...s, paused: !s.paused } : s));
   }, []);
 
+  const toggleWatched = useCallback((showId: string, episodeId: string) => {
+    setWatchedEpisodes(prev => {
+      const current = prev[showId] || [];
+      const has = current.includes(episodeId);
+      return { ...prev, [showId]: has ? current.filter(e => e !== episodeId) : [...current, episodeId] };
+    });
+  }, []);
+
+  const markAllWatched = useCallback((showId: string) => {
+    const show = shows.find(s => s.id === showId);
+    if (!show) return;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const airedIds = show.episodes
+      .filter(ep => new Date(ep.airDate + 'T00:00:00') <= today)
+      .map(ep => ep.id);
+    setWatchedEpisodes(prev => ({ ...prev, [showId]: airedIds }));
+  }, [shows]);
+
+  const openDetail = useCallback((target: ShowDetailTarget) => setDetailTarget(target), []);
+  const closeDetail = useCallback(() => setDetailTarget(null), []);
+
   return (
-    <ShowsContext.Provider value={{ shows, addShow, removeShow, togglePause, addShowFormRef }}>
+    <ShowsContext.Provider value={{
+      shows, addShow, removeShow, togglePause, addShowFormRef,
+      watchedEpisodes, toggleWatched, markAllWatched,
+      detailTarget, openDetail, closeDetail,
+    }}>
       {children}
     </ShowsContext.Provider>
   );
