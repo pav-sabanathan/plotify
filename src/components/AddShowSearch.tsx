@@ -4,60 +4,62 @@ import { TrackedShow, Platform, PLATFORM_LABELS } from '@/types/show';
 import { Search, Plus } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 import PlatformBadge from './PlatformBadge';
+import FallbackPoster from './FallbackPoster';
 import { toast } from '@/hooks/use-toast';
+import { MOCK_SHOW_DATABASE, MockShow } from '@/data/mockShowDatabase';
 
-// Mock search results for demo
-const MOCK_RESULTS: Omit<TrackedShow, 'paused'>[] = [
-  {
-    id: 'severance',
-    name: 'Severance',
-    poster: 'https://image.tmdb.org/t/p/w200/pAzRkqLnJsMjnE2I3OaRkfvQeo0.jpg',
-    platform: 'apple',
-    status: 'ongoing',
-    releaseType: 'weekly',
-    releaseDay: 5,
-    releaseTime: '00:00',
-    episodes: Array.from({ length: 10 }, (_, i) => ({
-      id: `s2e${i + 1}`,
-      season: 2,
+const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+function generateEpisodesFromMock(show: MockShow): TrackedShow['episodes'] {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  if (show.releaseType === 'full-season') {
+    const dropDate = show.fullSeasonDropDate
+      ? new Date(show.fullSeasonDropDate + 'T00:00:00')
+      : addDays(today, 14);
+    const dateStr = format(dropDate, 'yyyy-MM-dd');
+    return Array.from({ length: show.episodesPerSeason }, (_, i) => ({
+      id: `s${show.season}e${i + 1}`,
+      season: show.season,
       episode: i + 1,
       title: `Episode ${i + 1}`,
-      airDate: format(addDays(new Date(), (i - 3) * 7), 'yyyy-MM-dd'),
-    })),
-  },
-  {
-    id: 'squid-game',
-    name: 'Squid Game',
-    poster: 'https://image.tmdb.org/t/p/w200/dDlEmu3EZ0Pgg93K2SVNLCjCSvE.jpg',
-    platform: 'netflix',
-    status: 'upcoming',
-    releaseType: 'full-season',
-    episodes: Array.from({ length: 7 }, (_, i) => ({
-      id: `s3e${i + 1}`,
-      season: 3,
-      episode: i + 1,
-      title: `Episode ${i + 1}`,
-      airDate: format(addDays(new Date(), 30), 'yyyy-MM-dd'),
-    })),
-  },
-  {
-    id: 'andor',
-    name: 'Andor',
-    poster: 'https://image.tmdb.org/t/p/w200/59SVNwLfoMnZPPB6ukW6dlPxAdI.jpg',
-    platform: 'disney',
-    status: 'upcoming',
-    releaseType: 'weekly',
-    releaseDay: 3,
-    releaseTime: '02:00',
-    episodes: Array.from({ length: 12 }, (_, i) => ({
-      id: `s2e${i + 1}`,
-      season: 2,
-      episode: i + 1,
-      title: `Episode ${i + 1}`,
-      airDate: format(addDays(new Date(), (i + 2) * 7), 'yyyy-MM-dd'),
-    })),
-  },
-];
+      airDate: dateStr,
+    }));
+  }
+
+  // Weekly — calculate from release day
+  const releaseDay = show.releaseDay ?? 0;
+  const currentDay = today.getDay();
+  let daysUntil = releaseDay - currentDay;
+  if (daysUntil < 0) daysUntil += 7;
+
+  const startDate = addDays(today, daysUntil);
+  return Array.from({ length: show.episodesPerSeason }, (_, i) => ({
+    id: `s${show.season}e${i + 1}`,
+    season: show.season,
+    episode: i + 1,
+    title: `Episode ${i + 1}`,
+    airDate: format(addDays(startDate, i * 7), 'yyyy-MM-dd'),
+  }));
+}
+
+function getScheduleLabel(show: MockShow): string {
+  const platformLabel = PLATFORM_LABELS[show.platform];
+  if (show.releaseType === 'full-season') {
+    if (show.fullSeasonDropDate) {
+      const d = new Date(show.fullSeasonDropDate + 'T00:00:00');
+      return `Full season drop ${format(d, 'MMM d, yyyy')} on ${platformLabel}`;
+    }
+    return `Full season drop on ${platformLabel}`;
+  }
+  if (show.releaseDay !== undefined) {
+    return `Every ${DAY_NAMES[show.releaseDay]} on ${platformLabel}`;
+  }
+  return platformLabel;
+}
+
+const searchableShows = MOCK_SHOW_DATABASE.filter(s => !s.manualOnly);
 
 const AddShowSearch = () => {
   const { shows, addShow } = useShows();
@@ -73,27 +75,38 @@ const AddShowSearch = () => {
   });
   const [errors, setErrors] = useState<{ name?: string; platform?: string }>({});
 
-  const filtered = query.trim().length > 0
-    ? MOCK_RESULTS.filter(r =>
+  const filtered = query.trim().length >= 2
+    ? searchableShows.filter(r =>
         r.name.toLowerCase().includes(query.toLowerCase()) &&
         !shows.some(s => s.id === r.id)
       )
     : [];
 
-  const handleTrack = (result: Omit<TrackedShow, 'paused'>) => {
-    // Check duplicate by name
-    if (shows.some(s => s.name.toLowerCase() === result.name.toLowerCase())) {
+  const handleTrack = (mock: MockShow) => {
+    if (shows.some(s => s.name.toLowerCase() === mock.name.toLowerCase())) {
       toast({
-        title: `${result.name} is already in your watchlist`,
+        title: `${mock.name} is already in your watchlist`,
         variant: 'destructive',
         className: 'bg-amber-600/90 border-amber-500 text-foreground',
         duration: 3000,
       });
       return;
     }
-    addShow({ ...result, paused: false });
+    const tracked: TrackedShow = {
+      id: mock.id,
+      name: mock.name,
+      poster: '/placeholder.svg',
+      platform: mock.platform,
+      status: mock.status,
+      releaseType: mock.releaseType,
+      paused: false,
+      releaseDay: mock.releaseDay,
+      releaseTime: mock.releaseTime,
+      episodes: generateEpisodesFromMock(mock),
+    };
+    addShow(tracked);
     toast({
-      title: `✓ ${result.name} added to your watchlist`,
+      title: `✓ ${mock.name} added to your watchlist`,
       className: 'bg-platform-prime/90 border-platform-prime text-foreground',
       duration: 2000,
     });
@@ -120,7 +133,6 @@ const AddShowSearch = () => {
       return;
     }
 
-    // Check duplicate by name
     if (shows.some(s => s.name.toLowerCase() === manualForm.name.trim().toLowerCase())) {
       toast({
         title: `${manualForm.name.trim()} is already in your watchlist`,
@@ -132,13 +144,11 @@ const AddShowSearch = () => {
     }
 
     const id = manualForm.name.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now();
-    // Find the next occurrence of the selected weekday
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const currentDay = today.getDay();
     let daysUntilRelease = manualForm.releaseDay - currentDay;
     if (daysUntilRelease < 0) daysUntilRelease += 7;
-    if (daysUntilRelease === 0) daysUntilRelease = 0; // Today is the release day
 
     const seasonNum = manualForm.season === '' ? 1 : parseInt(manualForm.season, 10) || 1;
     const episodeNum = manualForm.episode === '' ? 1 : parseInt(manualForm.episode, 10) || 1;
@@ -199,13 +209,15 @@ const AddShowSearch = () => {
         <div className="space-y-2 animate-fade-in">
           {filtered.map(result => (
             <div key={result.id} className="flex items-center gap-3 rounded-lg bg-card border p-3">
-              <img src={result.poster} alt={result.name} className="w-12 h-18 rounded-md object-cover" />
+              <FallbackPoster name={result.name} platform={result.platform} className="w-12 h-[72px] flex-shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sm">{result.name}</p>
-                <div className="flex items-center gap-2 mt-1">
+                <p className="font-semibold text-sm truncate">{result.name}</p>
+                <div className="flex items-center gap-2 mt-0.5">
                   <PlatformBadge platform={result.platform} />
                   <span className="text-xs text-muted-foreground capitalize">{result.status}</span>
                 </div>
+                <p className="text-xs text-muted-foreground mt-0.5 truncate">{getScheduleLabel(result)}</p>
+                <p className="text-xs text-muted-foreground/70 mt-0.5 line-clamp-1">{result.description}</p>
               </div>
               <button
                 onClick={() => handleTrack(result)}
@@ -219,7 +231,7 @@ const AddShowSearch = () => {
       )}
 
       {/* Empty search state */}
-      {query.trim().length > 0 && filtered.length === 0 && (
+      {query.trim().length >= 2 && filtered.length === 0 && (
         <div className="flex flex-col items-center py-8 text-center animate-fade-in">
           <Search className="h-10 w-10 text-muted-foreground/30 mb-3" />
           <p className="text-sm font-medium mb-1">No results for &apos;{query.trim()}&apos;</p>
