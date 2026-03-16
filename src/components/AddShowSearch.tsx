@@ -256,7 +256,7 @@ const AddShowSearch = () => {
       </button>
 
       {showManual && (
-        <div className="rounded-xl bg-card border p-4 space-y-3 animate-fade-in relative">
+        <div className="rounded-xl bg-card border p-4 space-y-3 animate-fade-in relative overflow-hidden box-border">
           <button
             onClick={() => {
               setShowManual(false);
