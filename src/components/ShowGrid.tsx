@@ -124,6 +124,19 @@ const ShowGrid = () => {
                   </TooltipTrigger>
                   <TooltipContent>Export to calendar</TooltipContent>
                 </Tooltip>
+                {!mockShowIds.has(show.id) && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => setEditingShow(show)}
+                        className="rounded-md bg-secondary p-1 hover:bg-accent transition-colors text-white"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>Edit show</TooltipContent>
+                  </Tooltip>
+                )}
                 <button
                   onClick={() => removeShow(show.id)}
                   className="rounded-md bg-destructive/10 p-1 text-destructive hover:bg-destructive/20 transition-colors"
@@ -136,6 +149,10 @@ const ShowGrid = () => {
           </div>
         );
       })}
+
+      {editingShow && (
+        <EditShowModal show={editingShow} onClose={() => setEditingShow(null)} />
+      )}
     </div>
   );
 };
