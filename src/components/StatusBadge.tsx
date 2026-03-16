@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 
-type DisplayStatus = 'ongoing' | 'ended' | 'upcoming' | 'full-season';
+type DisplayStatus = 'ongoing' | 'ended' | 'upcoming' | 'full-season' | 'season-complete';
 
 interface StatusBadgeProps {
   status: DisplayStatus;
