@@ -10,46 +10,56 @@ function toICSDate(dateStr: string, timeStr?: string): string {
   return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${pad(h)}${pad(m)}00`;
 }
 
-function uid(): string {
-  return `${Date.now()}-${Math.random().toString(36).slice(2)}@plotify`;
+function addHour(dateStr: string, timeStr?: string): string {
+  const d = new Date(dateStr + 'T00:00:00');
+  const [h, m] = (timeStr || '00:00').split(':').map(Number);
+  const endH = h + 1;
+  return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${pad(endH)}${pad(m)}00`;
+}
+
+function nowUTC(): string {
+  const d = new Date();
+  return `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}${pad(d.getUTCSeconds())}Z`;
+}
+
+function makeUID(showName: string, season: number, episode: number): string {
+  const safe = showName.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+  return `${safe}-s${season}e${episode}-${Date.now()}@plotify`;
 }
 
 export function generateICS(show: TrackedShow): string {
   const platform = PLATFORM_LABELS[show.platform];
+  const dtstamp = nowUTC();
   const lines: string[] = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
     'PRODID:-//Plotify//EN',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
+    'X-WR-CALNAME:Plotify',
+    'X-WR-TIMEZONE:UTC',
   ];
 
   if (show.releaseType === 'full-season' && show.episodes.length > 0) {
     const ep = show.episodes[0];
-    const dtStart = toICSDate(ep.airDate, show.releaseTime);
-    const dtEnd = toICSDate(ep.airDate, show.releaseTime ? `${parseInt(show.releaseTime) + 1}:${show.releaseTime.split(':')[1]}` : '01:00');
     lines.push(
       'BEGIN:VEVENT',
-      `UID:${uid()}`,
-      `DTSTART:${dtStart}`,
-      `DTEND:${dtEnd}`,
+      `UID:${makeUID(show.name, ep.season, 0)}`,
+      `DTSTAMP:${dtstamp}`,
+      `DTSTART:${toICSDate(ep.airDate, show.releaseTime)}`,
+      `DTEND:${addHour(ep.airDate, show.releaseTime)}`,
       `SUMMARY:${show.name} S${ep.season} — All Episodes Available`,
       `DESCRIPTION:All episodes of ${show.name} Season ${ep.season} available on ${platform}`,
       'END:VEVENT',
     );
   } else {
     for (const ep of show.episodes) {
-      const dtStart = toICSDate(ep.airDate, show.releaseTime);
-      // 1 hour duration
-      const h = parseInt(show.releaseTime || '0');
-      const m = (show.releaseTime || '00:00').split(':')[1];
-      const endH = h + 1;
-      const dtEnd = `${ep.airDate.replace(/-/g, '')}T${pad(endH)}${pad(parseInt(m || '0'))}00`;
       lines.push(
         'BEGIN:VEVENT',
-        `UID:${uid()}`,
-        `DTSTART:${dtStart}`,
-        `DTEND:${dtEnd}`,
+        `UID:${makeUID(show.name, ep.season, ep.episode)}`,
+        `DTSTAMP:${dtstamp}`,
+        `DTSTART:${toICSDate(ep.airDate, show.releaseTime)}`,
+        `DTEND:${addHour(ep.airDate, show.releaseTime)}`,
         `SUMMARY:${show.name} — S${ep.season}E${ep.episode}`,
         `DESCRIPTION:New episode of ${show.name} available on ${platform}`,
         'END:VEVENT',
@@ -58,7 +68,7 @@ export function generateICS(show: TrackedShow): string {
   }
 
   lines.push('END:VCALENDAR');
-  return lines.join('\r\n');
+  return lines.join('\r\n') + '\r\n';
 }
 
 export function downloadICS(show: TrackedShow): void {
