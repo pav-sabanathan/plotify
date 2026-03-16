@@ -12,15 +12,17 @@ export interface AddShowFormState {
     platform: Platform | '';
     releaseDay: number;
     releaseTime: string;
+    firstEpisodeDate: string;
     season: string;
     episode: string;
+    totalEpisodes: string;
   };
 }
 
 const DEFAULT_ADD_FORM: AddShowFormState = {
   query: '',
   showManual: false,
-  manualForm: { name: '', platform: '', releaseDay: 1, releaseTime: '20:00', season: '', episode: '' },
+  manualForm: { name: '', platform: '', releaseDay: 1, releaseTime: '20:00', firstEpisodeDate: '', season: '', episode: '', totalEpisodes: '' },
 };
 
 // watched episodes stored as { [showId]: string[] } where strings are episode ids
