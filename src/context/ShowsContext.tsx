@@ -146,7 +146,7 @@ export const ShowsProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   return (
     <ShowsContext.Provider value={{
-      shows, addShow, removeShow, togglePause, addShowFormRef,
+      shows, addShow, removeShow, updateShow, togglePause, addShowFormRef,
       watchedEpisodes, toggleWatched, markAllWatched,
       detailTarget, openDetail, closeDetail,
     }}>
