@@ -36,7 +36,6 @@ const ShowGrid = () => {
   const { shows, removeShow, togglePause, watchedEpisodes, openDetail } = useShows();
   const navigate = useNavigate();
   const [editingShow, setEditingShow] = useState<TrackedShow | null>(null);
-  const navigate = useNavigate();
 
   if (shows.length === 0) {
     return (
