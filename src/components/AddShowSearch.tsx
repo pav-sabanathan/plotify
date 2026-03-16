@@ -303,7 +303,7 @@ const AddShowSearch = () => {
             {errors.platform && <p className="text-xs text-destructive mt-1">{errors.platform}</p>}
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <label className="text-xs text-muted-foreground">Release Day</label>
               <select
