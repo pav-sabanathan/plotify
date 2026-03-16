@@ -1,13 +1,14 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { useShows } from '@/context/ShowsContext';
-import { PLATFORM_LABELS, PLATFORM_COLORS, PLATFORM_BORDER_COLORS } from '@/types/show';
+import { PLATFORM_LABELS, PLATFORM_COLORS, PLATFORM_BORDER_COLORS, Episode } from '@/types/show';
 import PlatformBadge from './PlatformBadge';
 import StatusBadge from './StatusBadge';
 import FallbackPoster from './FallbackPoster';
 import { X, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { format, parseISO, isBefore } from 'date-fns';
+import { format } from 'date-fns';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { MOCK_SHOW_DATABASE } from '@/data/mockShowDatabase';
 
 const isPlaceholder = (poster: string) => !poster || poster === '/placeholder.svg';
 
@@ -15,6 +16,19 @@ const getDisplayStatus = (show: any) => {
   if (show.releaseType === 'full-season' && show.status !== 'ended') return 'full-season' as const;
   return show.status;
 };
+
+/** Build placeholder episodes for a historical season */
+function generateHistoricalEpisodes(seasonNum: number, count: number): Episode[] {
+  // Use a fixed past date for historical seasons
+  const baseDate = new Date(2020 + seasonNum, 0, 1);
+  return Array.from({ length: count }, (_, i) => ({
+    id: `s${seasonNum}e${i + 1}`,
+    season: seasonNum,
+    episode: i + 1,
+    title: `Episode ${i + 1}`,
+    airDate: format(baseDate, 'yyyy-MM-dd'),
+  }));
+}
 
 const ShowDetailPanel = () => {
   const { shows, detailTarget, closeDetail, watchedEpisodes, toggleWatched, markAllWatched } = useShows();
@@ -24,9 +38,53 @@ const ShowDetailPanel = () => {
 
   const show = detailTarget ? shows.find(s => s.id === detailTarget.showId) : null;
 
+  // Determine the current (latest) season from the show's episodes
+  const currentSeason = useMemo(() => {
+    if (!show) return 1;
+    return Math.max(...show.episodes.map(ep => ep.season), 1);
+  }, [show]);
+
+  // Total number of seasons
+  const totalSeasons = useMemo(() => {
+    if (!show) return 1;
+    // Check mock database for the season count
+    const mockEntry = MOCK_SHOW_DATABASE.find(m => m.id === show.id);
+    if (mockEntry) return mockEntry.season;
+    return currentSeason;
+  }, [show, currentSeason]);
+
+  const [selectedSeason, setSelectedSeason] = useState(currentSeason);
+
+  // Reset selected season when show changes
+  useEffect(() => {
+    setSelectedSeason(currentSeason);
+  }, [detailTarget?.showId, currentSeason]);
+
+  // Get episode count for a given season
+  const getEpisodeCount = useMemo(() => {
+    if (!show) return () => 10;
+    const mockEntry = MOCK_SHOW_DATABASE.find(m => m.id === show.id);
+    const defaultCount = mockEntry?.episodesPerSeason ?? 10;
+    return (season: number) => {
+      // If the show has stored episodes for this season, use that count
+      const stored = show.episodes.filter(ep => ep.season === season);
+      if (stored.length > 0) return stored.length;
+      return defaultCount;
+    };
+  }, [show]);
+
+  // Episodes for the selected season
+  const seasonEpisodes = useMemo(() => {
+    if (!show) return [];
+    const stored = show.episodes.filter(ep => ep.season === selectedSeason);
+    if (stored.length > 0) return stored;
+    // Generate historical episodes
+    const count = getEpisodeCount(selectedSeason);
+    return generateHistoricalEpisodes(selectedSeason, count);
+  }, [show, selectedSeason, getEpisodeCount]);
+
   useEffect(() => {
     if (detailTarget?.highlightEpisodeId) {
-      // Small delay to let render complete
       setTimeout(() => {
         const el = episodeRefs.current[detailTarget.highlightEpisodeId!];
         if (el) {
@@ -43,10 +101,28 @@ const ShowDetailPanel = () => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const watched = watchedEpisodes[show.id] || [];
-  const airedEpisodes = show.episodes.filter(ep => new Date(ep.airDate + 'T00:00:00') <= today);
-  const watchedCount = watched.length;
-  const totalEps = show.episodes.length;
+
+  // Per-season progress
+  const seasonEpIds = seasonEpisodes.map(ep => ep.id);
+  const watchedCount = watched.filter(id => seasonEpIds.includes(id)).length;
+  const totalEps = seasonEpisodes.length;
   const progress = totalEps > 0 ? (watchedCount / totalEps) * 100 : 0;
+
+  // For historical seasons, all episodes are considered aired
+  const isHistoricalSeason = selectedSeason < currentSeason;
+
+  const handleMarkAllSeason = () => {
+    // Mark all aired episodes of this season as watched
+    const airedIds = seasonEpisodes
+      .filter(ep => isHistoricalSeason || new Date(ep.airDate + 'T00:00:00') <= today)
+      .map(ep => ep.id);
+    // Merge with existing watched (preserving other seasons)
+    const otherWatched = watched.filter(id => !seasonEpIds.includes(id));
+    // We need to use the context's raw setter — use markAllWatched for current season or toggleWatched
+    // Actually let's just call toggleWatched for unwatched ones
+    const unwatched = airedIds.filter(id => !watched.includes(id));
+    unwatched.forEach(id => toggleWatched(show.id, id));
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex" onClick={closeDetail}>
@@ -102,9 +178,29 @@ const ShowDetailPanel = () => {
             </div>
           </div>
 
+          {/* Season selector */}
+          {totalSeasons > 1 && (
+            <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
+              {Array.from({ length: totalSeasons }, (_, i) => i + 1).map(s => (
+                <button
+                  key={s}
+                  onClick={() => setSelectedSeason(s)}
+                  className={cn(
+                    'flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors',
+                    s === selectedSeason
+                      ? cn(PLATFORM_COLORS[show.platform], 'text-white')
+                      : 'bg-secondary text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  S{s}
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* Mark all button */}
           <button
-            onClick={() => markAllWatched(show.id)}
+            onClick={handleMarkAllSeason}
             className="w-full rounded-lg bg-secondary hover:bg-accent text-secondary-foreground py-2 text-sm font-medium transition-colors flex items-center justify-center gap-2"
           >
             <CheckCircle2 className="h-4 w-4" />
@@ -114,11 +210,11 @@ const ShowDetailPanel = () => {
           {/* Episode list */}
           <div ref={listRef} className="space-y-1">
             <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
-              Season {show.episodes[0]?.season ?? 1} Episodes
+              Season {selectedSeason} Episodes
             </h4>
-            {show.episodes.map(ep => {
+            {seasonEpisodes.map(ep => {
               const airDate = new Date(ep.airDate + 'T00:00:00');
-              const aired = airDate <= today;
+              const aired = isHistoricalSeason || airDate <= today;
               const isWatched = watched.includes(ep.id);
               return (
                 <div
