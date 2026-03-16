@@ -1,13 +1,16 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useShows } from '@/context/ShowsContext';
 import PlatformBadge from './PlatformBadge';
 import StatusBadge from './StatusBadge';
 import FallbackPoster from './FallbackPoster';
-import { Pause, Play, Trash2, Tv, CalendarPlus } from 'lucide-react';
+import EditShowModal from './EditShowModal';
+import { Pause, Play, Trash2, Tv, CalendarPlus, Pencil } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PLATFORM_BORDER_COLORS, PLATFORM_COLORS, TrackedShow } from '@/types/show';
 import { downloadICS } from '@/lib/icsExport';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { MOCK_SHOW_DATABASE } from '@/data/mockShowDatabase';
 
 const isPlaceholder = (poster: string) => !poster || poster === '/placeholder.svg';
 
@@ -27,9 +30,12 @@ const PLATFORM_TEXT: Record<string, string> = {
   manual: 'text-platform-manual',
 };
 
+const mockShowIds = new Set(MOCK_SHOW_DATABASE.map(s => s.id));
+
 const ShowGrid = () => {
   const { shows, removeShow, togglePause, watchedEpisodes, openDetail } = useShows();
   const navigate = useNavigate();
+  const [editingShow, setEditingShow] = useState<TrackedShow | null>(null);
 
   if (shows.length === 0) {
     return (
@@ -118,6 +124,19 @@ const ShowGrid = () => {
                   </TooltipTrigger>
                   <TooltipContent>Export to calendar</TooltipContent>
                 </Tooltip>
+                {!mockShowIds.has(show.id) && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => setEditingShow(show)}
+                        className="rounded-md bg-secondary p-1 hover:bg-accent transition-colors text-white"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>Edit show</TooltipContent>
+                  </Tooltip>
+                )}
                 <button
                   onClick={() => removeShow(show.id)}
                   className="rounded-md bg-destructive/10 p-1 text-destructive hover:bg-destructive/20 transition-colors"
@@ -130,6 +149,10 @@ const ShowGrid = () => {
           </div>
         );
       })}
+
+      {editingShow && (
+        <EditShowModal show={editingShow} onClose={() => setEditingShow(null)} />
+      )}
     </div>
   );
 };

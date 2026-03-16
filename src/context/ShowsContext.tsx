@@ -37,6 +37,7 @@ interface ShowsContextType {
   shows: TrackedShow[];
   addShow: (show: TrackedShow) => void;
   removeShow: (id: string) => void;
+  updateShow: (id: string, updates: Partial<TrackedShow>) => void;
   togglePause: (id: string) => void;
   addShowFormRef: React.MutableRefObject<AddShowFormState>;
   watchedEpisodes: WatchedMap;
@@ -113,6 +114,10 @@ export const ShowsProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     });
   }, []);
 
+  const updateShow = useCallback((id: string, updates: Partial<TrackedShow>) => {
+    setShows(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
+  }, []);
+
   const togglePause = useCallback((id: string) => {
     setShows(prev => prev.map(s => s.id === id ? { ...s, paused: !s.paused } : s));
   }, []);
@@ -141,7 +146,7 @@ export const ShowsProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   return (
     <ShowsContext.Provider value={{
-      shows, addShow, removeShow, togglePause, addShowFormRef,
+      shows, addShow, removeShow, updateShow, togglePause, addShowFormRef,
       watchedEpisodes, toggleWatched, markAllWatched,
       detailTarget, openDetail, closeDetail,
     }}>
