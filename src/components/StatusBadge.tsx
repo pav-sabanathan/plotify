@@ -19,6 +19,7 @@ const STATUS_LABELS: Record<DisplayStatus, string> = {
   ended: 'Ended',
   upcoming: 'Upcoming',
   'full-season': 'All Episodes Available',
+  'season-complete': 'Season Complete',
 };
 
 const StatusBadge = ({ status }: StatusBadgeProps) => (

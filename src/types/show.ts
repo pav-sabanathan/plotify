@@ -23,6 +23,8 @@ export interface TrackedShow {
   episodes: Episode[];
   releaseDay?: number; // 0=Sun, 1=Mon...
   releaseTime?: string; // HH:mm
+  firstEpisodeDate?: string; // ISO date string
+  totalEpisodes?: number;
 }
 
 export const PLATFORM_LABELS: Record<Platform, string> = {
