@@ -37,6 +37,7 @@ interface ShowsContextType {
   shows: TrackedShow[];
   addShow: (show: TrackedShow) => void;
   removeShow: (id: string) => void;
+  updateShow: (id: string, updates: Partial<TrackedShow>) => void;
   togglePause: (id: string) => void;
   addShowFormRef: React.MutableRefObject<AddShowFormState>;
   watchedEpisodes: WatchedMap;
