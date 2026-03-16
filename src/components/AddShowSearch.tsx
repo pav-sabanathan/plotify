@@ -351,7 +351,9 @@ const AddShowSearch = () => {
               type="date"
               value={manualForm.firstEpisodeDate}
               onChange={e => {
-                setManualForm({ ...manualForm, firstEpisodeDate: e.target.value });
+                const val = e.target.value;
+                const newDay = val ? new Date(val + 'T00:00:00').getDay() : 1;
+                setManualForm({ ...manualForm, firstEpisodeDate: val, releaseDay: newDay });
                 if (errors.firstEpisodeDate) setErrors(prev => ({ ...prev, firstEpisodeDate: undefined }));
               }}
               onBlur={() => validateField('firstEpisodeDate')}
