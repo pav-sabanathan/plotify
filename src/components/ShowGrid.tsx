@@ -1,13 +1,16 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useShows } from '@/context/ShowsContext';
 import PlatformBadge from './PlatformBadge';
 import StatusBadge from './StatusBadge';
 import FallbackPoster from './FallbackPoster';
-import { Pause, Play, Trash2, Tv, CalendarPlus } from 'lucide-react';
+import EditShowModal from './EditShowModal';
+import { Pause, Play, Trash2, Tv, CalendarPlus, Pencil } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PLATFORM_BORDER_COLORS, PLATFORM_COLORS, TrackedShow } from '@/types/show';
 import { downloadICS } from '@/lib/icsExport';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { MOCK_SHOW_DATABASE } from '@/data/mockShowDatabase';
 
 const isPlaceholder = (poster: string) => !poster || poster === '/placeholder.svg';
 
