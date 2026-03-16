@@ -1,6 +1,6 @@
 export type Platform = 'netflix' | 'disney' | 'apple' | 'prime' | 'bbc' | 'manual';
 
-export type ShowStatus = 'ongoing' | 'ended' | 'upcoming';
+export type ShowStatus = 'ongoing' | 'ended' | 'upcoming' | 'season-complete';
 
 export type ReleaseType = 'weekly' | 'full-season';
 
@@ -23,6 +23,8 @@ export interface TrackedShow {
   episodes: Episode[];
   releaseDay?: number; // 0=Sun, 1=Mon...
   releaseTime?: string; // HH:mm
+  firstEpisodeDate?: string; // ISO date string
+  totalEpisodes?: number;
 }
 
 export const PLATFORM_LABELS: Record<Platform, string> = {

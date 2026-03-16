@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 
-type DisplayStatus = 'ongoing' | 'ended' | 'upcoming' | 'full-season';
+type DisplayStatus = 'ongoing' | 'ended' | 'upcoming' | 'full-season' | 'season-complete';
 
 interface StatusBadgeProps {
   status: DisplayStatus;
@@ -11,6 +11,7 @@ const STATUS_STYLES: Record<DisplayStatus, string> = {
   ended: 'bg-muted text-muted-foreground',
   upcoming: 'bg-amber-500/20 text-amber-400',
   'full-season': 'bg-amber-600/20 text-amber-300',
+  'season-complete': 'bg-muted text-muted-foreground',
 };
 
 const STATUS_LABELS: Record<DisplayStatus, string> = {
@@ -18,6 +19,7 @@ const STATUS_LABELS: Record<DisplayStatus, string> = {
   ended: 'Ended',
   upcoming: 'Upcoming',
   'full-season': 'All Episodes Available',
+  'season-complete': 'Season Complete',
 };
 
 const StatusBadge = ({ status }: StatusBadgeProps) => (

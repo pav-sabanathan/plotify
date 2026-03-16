@@ -28,7 +28,6 @@ function generateEpisodesFromMock(show: MockShow): TrackedShow['episodes'] {
     }));
   }
 
-  // Weekly — calculate from release day
   const releaseDay = show.releaseDay ?? 0;
   const currentDay = today.getDay();
   let daysUntil = releaseDay - currentDay;
@@ -59,6 +58,8 @@ function getScheduleLabel(show: MockShow): string {
   return platformLabel;
 }
 
+const EMPTY_MANUAL_FORM = { name: '', platform: '' as Platform | '', releaseDay: 1, releaseTime: '20:00', firstEpisodeDate: '', season: '', episode: '', totalEpisodes: '' };
+
 const searchableShows = MOCK_SHOW_DATABASE.filter(s => !s.manualOnly);
 
 const AddShowSearch = () => {
@@ -66,9 +67,8 @@ const AddShowSearch = () => {
   const [query, setQuery] = useState(addShowFormRef.current.query);
   const [showManual, setShowManual] = useState(addShowFormRef.current.showManual);
   const [manualForm, setManualForm] = useState(addShowFormRef.current.manualForm);
-  const [errors, setErrors] = useState<{ name?: string; platform?: string }>({});
+  const [errors, setErrors] = useState<{ name?: string; platform?: string; firstEpisodeDate?: string; totalEpisodes?: string }>({});
 
-  // Sync state back to ref on every change so it persists across navigation
   useEffect(() => {
     addShowFormRef.current = { query, showManual, manualForm };
   }, [query, showManual, manualForm, addShowFormRef]);
@@ -111,7 +111,7 @@ const AddShowSearch = () => {
     setQuery('');
   };
 
-  const validateField = (field: 'name' | 'platform') => {
+  const validateField = (field: 'name' | 'platform' | 'firstEpisodeDate' | 'totalEpisodes') => {
     const newErrors = { ...errors };
     if (field === 'name') {
       newErrors.name = manualForm.name.trim() ? undefined : 'Please enter a show name';
@@ -119,14 +119,22 @@ const AddShowSearch = () => {
     if (field === 'platform') {
       newErrors.platform = manualForm.platform ? undefined : 'Please select a platform';
     }
+    if (field === 'firstEpisodeDate') {
+      newErrors.firstEpisodeDate = manualForm.firstEpisodeDate ? undefined : 'Please select the first episode date';
+    }
+    if (field === 'totalEpisodes') {
+      newErrors.totalEpisodes = manualForm.totalEpisodes ? undefined : 'Please enter the total number of episodes';
+    }
     setErrors(newErrors);
   };
 
   const handleManualAdd = () => {
-    const newErrors: { name?: string; platform?: string } = {};
+    const newErrors: typeof errors = {};
     if (!manualForm.name.trim()) newErrors.name = 'Please enter a show name';
     if (!manualForm.platform) newErrors.platform = 'Please select a platform';
-    if (Object.keys(newErrors).length > 0) {
+    if (!manualForm.firstEpisodeDate) newErrors.firstEpisodeDate = 'Please select the first episode date';
+    if (!manualForm.totalEpisodes) newErrors.totalEpisodes = 'Please enter the total number of episodes';
+    if (Object.values(newErrors).some(Boolean)) {
       setErrors(newErrors);
       return;
     }
@@ -142,18 +150,14 @@ const AddShowSearch = () => {
     }
 
     const id = manualForm.name.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now();
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const currentDay = today.getDay();
-    let daysUntilRelease = manualForm.releaseDay - currentDay;
-    if (daysUntilRelease < 0) daysUntilRelease += 7;
-
     const seasonNum = manualForm.season === '' ? 1 : parseInt(manualForm.season, 10) || 1;
     const episodeNum = manualForm.episode === '' ? 1 : parseInt(manualForm.episode, 10) || 1;
+    const totalEps = parseInt(manualForm.totalEpisodes, 10) || 10;
+    const firstDate = new Date(manualForm.firstEpisodeDate + 'T00:00:00');
 
-    const episodes = Array.from({ length: 10 }, (_, i) => {
-      const epDate = new Date(today);
-      epDate.setDate(today.getDate() + daysUntilRelease + i * 7);
+    const episodes = Array.from({ length: totalEps }, (_, i) => {
+      const epDate = new Date(firstDate);
+      epDate.setDate(firstDate.getDate() + i * 7);
       const year = epDate.getFullYear();
       const month = String(epDate.getMonth() + 1).padStart(2, '0');
       const day = String(epDate.getDate()).padStart(2, '0');
@@ -165,17 +169,27 @@ const AddShowSearch = () => {
         airDate: `${year}-${month}-${day}`,
       };
     });
+
+    // Determine initial status
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const finalEpDate = new Date(firstDate);
+    finalEpDate.setDate(firstDate.getDate() + (totalEps - 1) * 7);
+    const status = finalEpDate < today ? 'season-complete' : 'ongoing';
+
     const showName = manualForm.name.trim();
     addShow({
       id,
       name: showName,
       poster: '/placeholder.svg',
       platform: manualForm.platform as Platform,
-      status: 'ongoing',
+      status,
       releaseType: 'weekly',
       paused: false,
       releaseDay: manualForm.releaseDay,
       releaseTime: manualForm.releaseTime,
+      firstEpisodeDate: manualForm.firstEpisodeDate,
+      totalEpisodes: totalEps,
       episodes,
     });
     toast({
@@ -183,7 +197,7 @@ const AddShowSearch = () => {
       className: 'bg-platform-prime/90 border-platform-prime text-foreground',
       duration: 2000,
     });
-    setManualForm({ name: '', platform: '', releaseDay: 1, releaseTime: '20:00', season: '', episode: '' });
+    setManualForm({ ...EMPTY_MANUAL_FORM });
     setErrors({});
     setShowManual(false);
   };
@@ -260,7 +274,7 @@ const AddShowSearch = () => {
           <button
             onClick={() => {
               setShowManual(false);
-              setManualForm({ name: '', platform: '', releaseDay: 1, releaseTime: '20:00', season: '', episode: '' });
+              setManualForm({ ...EMPTY_MANUAL_FORM });
               setErrors({});
             }}
             className="absolute top-3 right-3 text-muted-foreground hover:text-foreground transition-colors"
@@ -303,6 +317,7 @@ const AddShowSearch = () => {
             {errors.platform && <p className="text-xs text-destructive mt-1">{errors.platform}</p>}
           </div>
 
+          {/* Release Day / Release Time */}
           <div className="grid gap-3" style={{ gridTemplateColumns: '1fr 1fr' }}>
             <div>
               <label className="text-xs text-muted-foreground">Release Day</label>
@@ -328,7 +343,26 @@ const AddShowSearch = () => {
               />
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+
+          {/* First Episode Date */}
+          <div>
+            <label className="text-xs text-muted-foreground">First Episode Date</label>
+            <input
+              type="date"
+              value={manualForm.firstEpisodeDate}
+              onChange={e => {
+                setManualForm({ ...manualForm, firstEpisodeDate: e.target.value });
+                if (errors.firstEpisodeDate) setErrors(prev => ({ ...prev, firstEpisodeDate: undefined }));
+              }}
+              onBlur={() => validateField('firstEpisodeDate')}
+              className={`w-full rounded-lg bg-surface-2 border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring ${errors.firstEpisodeDate ? 'border-destructive' : 'border-transparent'}`}
+              style={{ height: '48px', minHeight: '48px', boxSizing: 'border-box' }}
+            />
+            {errors.firstEpisodeDate && <p className="text-xs text-destructive mt-1">{errors.firstEpisodeDate}</p>}
+          </div>
+
+          {/* Season / Current Episode */}
+          <div className="grid gap-3" style={{ gridTemplateColumns: '1fr 1fr' }}>
             <div>
               <label className="text-xs text-muted-foreground">Season</label>
               <input
@@ -358,6 +392,26 @@ const AddShowSearch = () => {
               />
             </div>
           </div>
+
+          {/* Total Episodes */}
+          <div>
+            <label className="text-xs text-muted-foreground">Total Episodes</label>
+            <input
+              type="text"
+              inputMode="numeric"
+              value={manualForm.totalEpisodes}
+              onChange={e => {
+                const val = e.target.value.replace(/[^0-9]/g, '');
+                setManualForm({ ...manualForm, totalEpisodes: val });
+                if (errors.totalEpisodes) setErrors(prev => ({ ...prev, totalEpisodes: undefined }));
+              }}
+              onBlur={() => validateField('totalEpisodes')}
+              placeholder="e.g. 8"
+              className={`w-full rounded-lg bg-surface-2 border px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring ${errors.totalEpisodes ? 'border-destructive' : 'border-transparent'}`}
+            />
+            {errors.totalEpisodes && <p className="text-xs text-destructive mt-1">{errors.totalEpisodes}</p>}
+          </div>
+
           <button
             onClick={handleManualAdd}
             className="w-full rounded-lg bg-platform-manual text-foreground py-2 text-sm font-semibold hover:opacity-90 transition-opacity"

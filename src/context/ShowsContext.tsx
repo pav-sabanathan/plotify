@@ -12,15 +12,17 @@ export interface AddShowFormState {
     platform: Platform | '';
     releaseDay: number;
     releaseTime: string;
+    firstEpisodeDate: string;
     season: string;
     episode: string;
+    totalEpisodes: string;
   };
 }
 
 const DEFAULT_ADD_FORM: AddShowFormState = {
   query: '',
   showManual: false,
-  manualForm: { name: '', platform: '', releaseDay: 1, releaseTime: '20:00', season: '', episode: '' },
+  manualForm: { name: '', platform: '', releaseDay: 1, releaseTime: '20:00', firstEpisodeDate: '', season: '', episode: '', totalEpisodes: '' },
 };
 
 // watched episodes stored as { [showId]: string[] } where strings are episode ids
@@ -47,10 +49,31 @@ interface ShowsContextType {
 
 const ShowsContext = createContext<ShowsContextType | undefined>(undefined);
 
+const migrateShow = (s: TrackedShow): TrackedShow => {
+  const migrated = { ...s };
+  if (!migrated.totalEpisodes) migrated.totalEpisodes = 10;
+  if (!migrated.firstEpisodeDate) {
+    const today = new Date();
+    migrated.firstEpisodeDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  }
+  // Check season completion
+  if (migrated.releaseType === 'weekly' && migrated.totalEpisodes && migrated.firstEpisodeDate) {
+    const start = new Date(migrated.firstEpisodeDate + 'T00:00:00');
+    const finalEpDate = new Date(start);
+    finalEpDate.setDate(start.getDate() + (migrated.totalEpisodes - 1) * 7);
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    if (finalEpDate < now && migrated.status !== 'ended') {
+      migrated.status = 'season-complete';
+    }
+  }
+  return migrated;
+};
+
 const loadShows = (): TrackedShow[] => {
   const stored = localStorage.getItem(STORAGE_KEY);
   if (stored !== null) {
-    try { return JSON.parse(stored); } catch { return []; }
+    try { return (JSON.parse(stored) as TrackedShow[]).map(migrateShow); } catch { return []; }
   }
   return [];
 };
