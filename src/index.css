@@ -105,3 +105,9 @@
 .animate-episode-highlight {
   animation: episode-highlight 1.5s ease-in-out;
 }
+
+/* White icons for native date/time inputs in dark mode */
+input[type="time"]::-webkit-calendar-picker-indicator,
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}

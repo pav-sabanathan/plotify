@@ -345,19 +345,53 @@ const AddShowSearch = () => {
           </div>
 
           {/* First Episode Date */}
-          <div>
+          <div className="relative">
             <label className="text-xs text-muted-foreground">First Episode Date</label>
-            <input
-              type="date"
-              value={manualForm.firstEpisodeDate}
-              onChange={e => {
-                setManualForm({ ...manualForm, firstEpisodeDate: e.target.value });
-                if (errors.firstEpisodeDate) setErrors(prev => ({ ...prev, firstEpisodeDate: undefined }));
-              }}
-              onBlur={() => validateField('firstEpisodeDate')}
-              className={`w-full rounded-lg bg-surface-2 border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring ${errors.firstEpisodeDate ? 'border-destructive' : 'border-transparent'}`}
-              style={{ height: '48px', minHeight: '48px', boxSizing: 'border-box' }}
-            />
+            <div className="relative">
+              <input
+                type="text"
+                inputMode="numeric"
+                value={manualForm.firstEpisodeDate ? (() => {
+                  const [y, m, d] = manualForm.firstEpisodeDate.split('-');
+                  return `${d}-${m}-${y}`;
+                })() : ''}
+                onChange={e => {
+                  let val = e.target.value.replace(/[^0-9-]/g, '');
+                  // Auto-insert dashes
+                  const digits = val.replace(/-/g, '');
+                  if (digits.length <= 2) val = digits;
+                  else if (digits.length <= 4) val = digits.slice(0, 2) + '-' + digits.slice(2);
+                  else val = digits.slice(0, 2) + '-' + digits.slice(2, 4) + '-' + digits.slice(4, 8);
+                  
+                  // Convert dd-mm-yyyy to yyyy-mm-dd for storage
+                  const parts = val.split('-');
+                  if (parts.length === 3 && parts[2].length === 4) {
+                    const isoDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                    setManualForm({ ...manualForm, firstEpisodeDate: isoDate });
+                  } else {
+                    // Store partial as empty to keep validation working
+                    setManualForm({ ...manualForm, firstEpisodeDate: '' });
+                  }
+                  if (errors.firstEpisodeDate) setErrors(prev => ({ ...prev, firstEpisodeDate: undefined }));
+                }}
+                onBlur={() => validateField('firstEpisodeDate')}
+                placeholder="dd-mm-yyyy"
+                maxLength={10}
+                className={`w-full rounded-lg bg-surface-2 border px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring ${errors.firstEpisodeDate ? 'border-destructive' : 'border-transparent'}`}
+                style={{ height: '48px', minHeight: '48px', boxSizing: 'border-box' }}
+              />
+              <input
+                type="date"
+                value={manualForm.firstEpisodeDate}
+                onChange={e => {
+                  setManualForm({ ...manualForm, firstEpisodeDate: e.target.value });
+                  if (errors.firstEpisodeDate) setErrors(prev => ({ ...prev, firstEpisodeDate: undefined }));
+                }}
+                className="absolute inset-0 opacity-0 cursor-pointer"
+                style={{ height: '48px', minHeight: '48px', boxSizing: 'border-box' }}
+                tabIndex={-1}
+              />
+            </div>
             {errors.firstEpisodeDate && <p className="text-xs text-destructive mt-1">{errors.firstEpisodeDate}</p>}
           </div>
 
