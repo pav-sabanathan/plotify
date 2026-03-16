@@ -303,27 +303,31 @@ const AddShowSearch = () => {
             {errors.platform && <p className="text-xs text-destructive mt-1">{errors.platform}</p>}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs text-muted-foreground">Release Day</label>
-              <select
-                value={manualForm.releaseDay}
-                onChange={e => setManualForm({ ...manualForm, releaseDay: Number(e.target.value) })}
-                className="w-full rounded-lg bg-surface-2 border-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-              >
-                {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((d, i) => (
-                  <option key={i} value={i}>{d}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="text-xs text-muted-foreground">Release Time</label>
-              <input
-                type="time"
-                value={manualForm.releaseTime}
-                onChange={e => setManualForm({ ...manualForm, releaseTime: e.target.value })}
-                className="w-full rounded-lg bg-surface-2 border-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-              />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3" style={{ gridTemplateColumns: undefined }}>
+            <div className="grid grid-cols-[1fr_1fr] gap-3 md:contents" style={{ gridTemplateColumns: '1fr 1fr' }}>
+              <div>
+                <label className="text-xs text-muted-foreground">Release Day</label>
+                <select
+                  value={manualForm.releaseDay}
+                  onChange={e => setManualForm({ ...manualForm, releaseDay: Number(e.target.value) })}
+                  className="w-full rounded-lg bg-surface-2 border-transparent text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  style={{ height: '48px', minHeight: '48px', boxSizing: 'border-box', padding: '0 12px', display: 'flex', alignItems: 'center' }}
+                >
+                  {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((d, i) => (
+                    <option key={i} value={i}>{d}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">Release Time</label>
+                <input
+                  type="time"
+                  value={manualForm.releaseTime}
+                  onChange={e => setManualForm({ ...manualForm, releaseTime: e.target.value })}
+                  className="w-full rounded-lg bg-surface-2 border-transparent text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  style={{ height: '48px', minHeight: '48px', boxSizing: 'border-box', padding: '0 12px', WebkitAppearance: 'none', appearance: 'none' as const }}
+                />
+              </div>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
