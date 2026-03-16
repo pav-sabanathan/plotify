@@ -256,7 +256,7 @@ const AddShowSearch = () => {
       </button>
 
       {showManual && (
-        <div className="rounded-xl bg-card border p-4 space-y-3 animate-fade-in relative">
+        <div className="rounded-xl bg-card border p-4 space-y-3 animate-fade-in relative overflow-hidden box-border">
           <button
             onClick={() => {
               setShowManual(false);
@@ -303,7 +303,7 @@ const AddShowSearch = () => {
             {errors.platform && <p className="text-xs text-destructive mt-1">{errors.platform}</p>}
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <label className="text-xs text-muted-foreground">Release Day</label>
               <select
@@ -326,7 +326,7 @@ const AddShowSearch = () => {
               />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <label className="text-xs text-muted-foreground">Season</label>
               <input
