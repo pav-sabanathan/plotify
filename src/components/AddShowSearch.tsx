@@ -356,7 +356,7 @@ const AddShowSearch = () => {
               }}
               onBlur={() => validateField('firstEpisodeDate')}
               className={`w-full rounded-lg bg-surface-2 border text-sm focus:outline-none focus:ring-2 focus:ring-ring ${errors.firstEpisodeDate ? 'border-destructive' : 'border-transparent'}`}
-              style={{ height: '48px', minHeight: '48px', boxSizing: 'border-box', padding: '0 12px', WebkitAppearance: 'none', appearance: 'none' as const, colorScheme: 'dark' }}
+              style={{ height: '48px', minHeight: '48px', boxSizing: 'border-box', padding: '0 12px', WebkitAppearance: 'none', appearance: 'none' as const }}
             />
             {manualForm.firstEpisodeDate && (
               <p className="text-xs text-muted-foreground mt-1">
