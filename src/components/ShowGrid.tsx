@@ -30,8 +30,12 @@ const PLATFORM_TEXT: Record<string, string> = {
   manual: 'text-platform-manual',
 };
 
+const mockShowIds = new Set(MOCK_SHOW_DATABASE.map(s => s.id));
+
 const ShowGrid = () => {
   const { shows, removeShow, togglePause, watchedEpisodes, openDetail } = useShows();
+  const navigate = useNavigate();
+  const [editingShow, setEditingShow] = useState<TrackedShow | null>(null);
   const navigate = useNavigate();
 
   if (shows.length === 0) {
