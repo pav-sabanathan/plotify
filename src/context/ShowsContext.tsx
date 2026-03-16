@@ -114,6 +114,10 @@ export const ShowsProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     });
   }, []);
 
+  const updateShow = useCallback((id: string, updates: Partial<TrackedShow>) => {
+    setShows(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
+  }, []);
+
   const togglePause = useCallback((id: string) => {
     setShows(prev => prev.map(s => s.id === id ? { ...s, paused: !s.paused } : s));
   }, []);
