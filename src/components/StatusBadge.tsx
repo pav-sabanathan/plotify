@@ -11,6 +11,7 @@ const STATUS_STYLES: Record<DisplayStatus, string> = {
   ended: 'bg-muted text-muted-foreground',
   upcoming: 'bg-amber-500/20 text-amber-400',
   'full-season': 'bg-amber-600/20 text-amber-300',
+  'season-complete': 'bg-muted text-muted-foreground',
 };
 
 const STATUS_LABELS: Record<DisplayStatus, string> = {
