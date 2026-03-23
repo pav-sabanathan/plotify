@@ -116,6 +116,7 @@ const AddShowSearch = () => {
       episodes: generateEpisodesFromMock(mock),
     };
     addShow(tracked);
+    trackEvent('show_added_search', { platform: mock.platform });
     toast({
       title: `✓ ${mock.name} added to your watchlist`,
       className: 'bg-platform-prime/90 border-platform-prime text-foreground',
