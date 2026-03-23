@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X, Tv, CalendarDays, CheckCircle } from 'lucide-react';
 import plotifyLogo from '@/assets/plotify-logo.png';
+import { trackEvent } from '@/lib/posthog';
 
 interface OnboardingModalProps {
   onDismiss: () => void;
