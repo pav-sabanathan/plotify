@@ -190,3 +190,4 @@ const ShowGrid = () => {
   );
 };
 
+export default ShowGrid;
