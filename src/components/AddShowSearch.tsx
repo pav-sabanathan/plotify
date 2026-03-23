@@ -70,16 +70,27 @@ const AddShowSearch = () => {
   const [showManual, setShowManual] = useState(addShowFormRef.current.showManual);
   const [manualForm, setManualForm] = useState(addShowFormRef.current.manualForm);
   const [errors, setErrors] = useState<{ name?: string; platform?: string; firstEpisodeDate?: string; totalEpisodes?: string }>({});
+  const searchDebounce = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
     addShowFormRef.current = { query, showManual, manualForm };
   }, [query, showManual, manualForm, addShowFormRef]);
 
+  const handleQueryChange = (val: string) => {
+    setQuery(val);
+    if (searchDebounce.current) clearTimeout(searchDebounce.current);
+    if (val.trim().length >= 2) {
+      searchDebounce.current = setTimeout(() => {
+        trackEvent('show_searched');
+      }, 1000);
+    }
+  };
+
   const filtered = query.trim().length >= 2
-    ? searchableShows.filter(r =>
+    ? sortByName(searchableShows.filter(r =>
         r.name.toLowerCase().includes(query.toLowerCase()) &&
         !shows.some(s => s.id === r.id)
-      )
+      ))
     : [];
 
   const handleTrack = (mock: MockShow) => {
