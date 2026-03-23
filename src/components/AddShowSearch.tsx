@@ -206,6 +206,7 @@ const AddShowSearch = () => {
       totalEpisodes: totalEps,
       episodes,
     });
+    trackEvent('show_added_manual', { platform: manualForm.platform as string });
     toast({
       title: `✓ ${showName} added to your watchlist`,
       className: 'bg-platform-prime/90 border-platform-prime text-foreground',

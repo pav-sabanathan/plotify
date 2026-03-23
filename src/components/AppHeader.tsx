@@ -10,7 +10,7 @@ const AppHeader = () => {
         src={plotifyLogo}
         alt="Plotify"
         className="w-[120px] cursor-pointer hover:opacity-80 transition-opacity"
-        onClick={() => navigate('/')}
+        onClick={() => navigate('/home')}
       />
     </div>
   );
