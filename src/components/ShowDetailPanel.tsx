@@ -229,7 +229,7 @@ const ShowDetailPanel = () => {
                 >
                   <button
                     disabled={!aired}
-                    onClick={() => toggleWatched(show.id, ep.id)}
+                    onClick={() => { toggleWatched(show.id, ep.id); trackEvent('episode_marked_watched'); }}
                     className={cn(
                       'flex-shrink-0 h-5 w-5 rounded-md border-2 flex items-center justify-center transition-all',
                       isWatched
