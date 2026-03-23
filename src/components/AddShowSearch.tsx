@@ -7,6 +7,8 @@ import PlatformBadge from './PlatformBadge';
 import FallbackPoster from './FallbackPoster';
 import { toast } from '@/hooks/use-toast';
 import { MOCK_SHOW_DATABASE, MockShow } from '@/data/mockShowDatabase';
+import { trackEvent } from '@/lib/posthog';
+import { sortByName } from '@/lib/sortShows';
 
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
