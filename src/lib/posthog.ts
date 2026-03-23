@@ -10,6 +10,8 @@ export const initPostHog = () => {
       capture_pageview: true,
       capture_pageleave: true,
       respect_dnt: true,
+      autocapture: true,
+      capture_exceptions: true,
     });
   }
 };
