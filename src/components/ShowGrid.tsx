@@ -13,6 +13,12 @@ import { trackEvent } from '@/lib/posthog';
 import { sortByName } from '@/lib/sortShows';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { MOCK_SHOW_DATABASE } from '@/data/mockShowDatabase';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+
+
 
 const isPlaceholder = (poster: string) => !poster || poster === '/placeholder.svg';
 
@@ -38,6 +44,7 @@ const ShowGrid = () => {
   const { shows, removeShow, togglePause, watchedEpisodes, openDetail } = useShows();
   const navigate = useNavigate();
   const [editingShow, setEditingShow] = useState<TrackedShow | null>(null);
+  const [deletingShow, setDeletingShow] = useState<TrackedShow | null>(null);
 
   if (shows.length === 0) {
     return (
@@ -142,7 +149,7 @@ const ShowGrid = () => {
                   </Tooltip>
                 )}
                 <button
-                  onClick={() => removeShow(show.id)}
+                  onClick={() => setDeletingShow(show)}
                   className="rounded-md bg-destructive/10 p-1 text-destructive hover:bg-destructive/20 transition-colors"
                   title="Remove"
                 >
@@ -157,6 +164,28 @@ const ShowGrid = () => {
       {editingShow && (
         <EditShowModal show={editingShow} onClose={() => setEditingShow(null)} />
       )}
+
+      <AlertDialog open={!!deletingShow} onOpenChange={(open) => { if (!open) setDeletingShow(null); }}>
+        <AlertDialogContent className="bg-[hsl(var(--card))] border-border">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Show?</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <p className="text-sm text-muted-foreground">
+                Are you sure you want to remove <span className="text-foreground font-medium">{deletingShow?.name}</span> from your watchlist? This will also delete your watch progress for this show.
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-secondary text-secondary-foreground hover:bg-secondary/80">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => { if (deletingShow) { removeShow(deletingShow.id); setDeletingShow(null); } }}
+            >
+              Remove Show
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
