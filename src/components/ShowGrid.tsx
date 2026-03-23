@@ -17,19 +17,8 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { useShows } from '@/context/ShowsContext';
-import PlatformBadge from './PlatformBadge';
-import StatusBadge from './StatusBadge';
-import FallbackPoster from './FallbackPoster';
-import EditShowModal from './EditShowModal';
-import { Pause, Play, Trash2, Tv, CalendarPlus, Pencil } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { PLATFORM_BORDER_COLORS, PLATFORM_COLORS, TrackedShow } from '@/types/show';
-import { downloadICS } from '@/lib/icsExport';
-import { trackEvent } from '@/lib/posthog';
-import { sortByName } from '@/lib/sortShows';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { MOCK_SHOW_DATABASE } from '@/data/mockShowDatabase';
+
+
 
 const isPlaceholder = (poster: string) => !poster || poster === '/placeholder.svg';
 
