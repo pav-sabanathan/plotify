@@ -55,9 +55,11 @@ const ShowGrid = () => {
     );
   }
 
+  const sorted = sortByName(shows);
+
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-      {shows.map((show, i) => {
+      {sorted.map((show, i) => {
         const watched = watchedEpisodes[show.id] || [];
         const totalEps = show.episodes.length;
         const watchedCount = watched.length;
