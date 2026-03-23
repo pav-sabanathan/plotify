@@ -149,7 +149,7 @@ const ShowGrid = () => {
                   </Tooltip>
                 )}
                 <button
-                  onClick={() => removeShow(show.id)}
+                  onClick={() => setDeletingShow(show)}
                   className="rounded-md bg-destructive/10 p-1 text-destructive hover:bg-destructive/20 transition-colors"
                   title="Remove"
                 >
