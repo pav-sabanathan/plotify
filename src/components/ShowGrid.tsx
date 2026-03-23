@@ -164,7 +164,33 @@ const ShowGrid = () => {
       {editingShow && (
         <EditShowModal show={editingShow} onClose={() => setEditingShow(null)} />
       )}
+
+      <AlertDialog open={!!deletingShow} onOpenChange={(open) => { if (!open) setDeletingShow(null); }}>
+        <AlertDialogContent className="bg-[hsl(var(--card))] border-border">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Show?</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <p className="text-sm text-muted-foreground">
+                Are you sure you want to remove <span className="text-foreground font-medium">{deletingShow?.name}</span> from your watchlist? This will also delete your watch progress for this show.
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-secondary text-secondary-foreground hover:bg-secondary/80">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => { if (deletingShow) { removeShow(deletingShow.id); setDeletingShow(null); } }}
+            >
+              Remove Show
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
+  );
+};
+
+export default ShowGrid;
   );
 };
 
