@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useShows } from '@/context/ShowsContext';
 import UpNextStrip from '@/components/UpNextStrip';
 import CalendarView from '@/components/CalendarView';
 import EmptyDashboard from '@/components/EmptyDashboard';
 import OnboardingModal from '@/components/OnboardingModal';
 import AppFooter from '@/components/AppFooter';
+import { trackEvent } from '@/lib/posthog';
 
 const Dashboard = () => {
   const { shows } = useShows();
@@ -16,6 +17,8 @@ const Dashboard = () => {
     setShowOnboarding(false);
     localStorage.setItem('plotify-onboarding-done', '1');
   };
+
+  useEffect(() => { trackEvent('app_opened'); }, []);
 
   const isEmpty = shows.length === 0;
 

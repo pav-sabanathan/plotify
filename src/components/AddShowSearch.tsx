@@ -7,6 +7,8 @@ import PlatformBadge from './PlatformBadge';
 import FallbackPoster from './FallbackPoster';
 import { toast } from '@/hooks/use-toast';
 import { MOCK_SHOW_DATABASE, MockShow } from '@/data/mockShowDatabase';
+import { trackEvent } from '@/lib/posthog';
+import { sortByName } from '@/lib/sortShows';
 
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -68,16 +70,27 @@ const AddShowSearch = () => {
   const [showManual, setShowManual] = useState(addShowFormRef.current.showManual);
   const [manualForm, setManualForm] = useState(addShowFormRef.current.manualForm);
   const [errors, setErrors] = useState<{ name?: string; platform?: string; firstEpisodeDate?: string; totalEpisodes?: string }>({});
+  const searchDebounce = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
     addShowFormRef.current = { query, showManual, manualForm };
   }, [query, showManual, manualForm, addShowFormRef]);
 
+  const handleQueryChange = (val: string) => {
+    setQuery(val);
+    if (searchDebounce.current) clearTimeout(searchDebounce.current);
+    if (val.trim().length >= 2) {
+      searchDebounce.current = setTimeout(() => {
+        trackEvent('show_searched');
+      }, 1000);
+    }
+  };
+
   const filtered = query.trim().length >= 2
-    ? searchableShows.filter(r =>
+    ? sortByName(searchableShows.filter(r =>
         r.name.toLowerCase().includes(query.toLowerCase()) &&
         !shows.some(s => s.id === r.id)
-      )
+      ))
     : [];
 
   const handleTrack = (mock: MockShow) => {
@@ -103,6 +116,7 @@ const AddShowSearch = () => {
       episodes: generateEpisodesFromMock(mock),
     };
     addShow(tracked);
+    trackEvent('show_added_search', { platform: mock.platform });
     toast({
       title: `✓ ${mock.name} added to your watchlist`,
       className: 'bg-platform-prime/90 border-platform-prime text-foreground',
@@ -192,6 +206,7 @@ const AddShowSearch = () => {
       totalEpisodes: totalEps,
       episodes,
     });
+    trackEvent('show_added_manual', { platform: manualForm.platform as string });
     toast({
       title: `✓ ${showName} added to your watchlist`,
       className: 'bg-platform-prime/90 border-platform-prime text-foreground',
@@ -210,7 +225,7 @@ const AddShowSearch = () => {
         <input
           type="text"
           value={query}
-          onChange={e => setQuery(e.target.value)}
+          onChange={e => handleQueryChange(e.target.value)}
           placeholder="Search for a TV show..."
           className="w-full rounded-xl bg-card border border-border pl-10 pr-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
         />

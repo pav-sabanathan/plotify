@@ -9,6 +9,8 @@ import { Pause, Play, Trash2, Tv, CalendarPlus, Pencil } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PLATFORM_BORDER_COLORS, PLATFORM_COLORS, TrackedShow } from '@/types/show';
 import { downloadICS } from '@/lib/icsExport';
+import { trackEvent } from '@/lib/posthog';
+import { sortByName } from '@/lib/sortShows';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { MOCK_SHOW_DATABASE } from '@/data/mockShowDatabase';
 
@@ -53,9 +55,11 @@ const ShowGrid = () => {
     );
   }
 
+  const sorted = sortByName(shows);
+
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-      {shows.map((show, i) => {
+      {sorted.map((show, i) => {
         const watched = watchedEpisodes[show.id] || [];
         const totalEps = show.episodes.length;
         const watchedCount = watched.length;
@@ -116,7 +120,7 @@ const ShowGrid = () => {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button
-                      onClick={() => downloadICS(show)}
+                      onClick={() => { downloadICS(show); trackEvent('ics_exported', { platform: show.platform }); }}
                       className="rounded-md bg-secondary p-1 hover:bg-accent transition-colors text-white"
                     >
                       <CalendarPlus className="h-3.5 w-3.5" />

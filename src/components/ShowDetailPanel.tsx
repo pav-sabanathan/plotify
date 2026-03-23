@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MOCK_SHOW_DATABASE } from '@/data/mockShowDatabase';
+import { trackEvent } from '@/lib/posthog';
 
 const isPlaceholder = (poster: string) => !poster || poster === '/placeholder.svg';
 
@@ -228,7 +229,7 @@ const ShowDetailPanel = () => {
                 >
                   <button
                     disabled={!aired}
-                    onClick={() => toggleWatched(show.id, ep.id)}
+                    onClick={() => { toggleWatched(show.id, ep.id); trackEvent('episode_marked_watched'); }}
                     className={cn(
                       'flex-shrink-0 h-5 w-5 rounded-md border-2 flex items-center justify-center transition-all',
                       isWatched

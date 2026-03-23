@@ -1,0 +1,183 @@
+import { useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Tv, CalendarDays, CheckCircle } from 'lucide-react';
+import { PLATFORM_LABELS } from '@/types/show';
+import { trackEvent } from '@/lib/posthog';
+import plotifyWordmark from '@/assets/plotify-wordmark.png';
+import plotifyIcon from '@/assets/plotify-logo.png';
+
+const PLATFORMS: { key: string; label: string; colorClass: string }[] = [
+  { key: 'netflix', label: 'Netflix', colorClass: 'text-platform-netflix' },
+  { key: 'disney', label: 'Disney+', colorClass: 'text-platform-disney' },
+  { key: 'apple', label: 'Apple TV', colorClass: 'text-platform-apple' },
+  { key: 'prime', label: 'Prime Video', colorClass: 'text-platform-prime' },
+  { key: 'bbc', label: 'BBC iPlayer', colorClass: 'text-platform-bbc' },
+];
+
+const HOW_IT_WORKS = [
+  { icon: Tv, heading: 'Add Your Shows', body: 'Search for any show and add it to your watchlist in seconds.' },
+  { icon: CalendarDays, heading: "See What's Dropping", body: 'Every upcoming episode appears on your personal release calendar, colour-coded by platform.' },
+  { icon: CheckCircle, heading: 'Track Your Progress', body: 'Mark episodes as watched and never lose your place again.' },
+];
+
+const LandingPage = () => {
+  const navigate = useNavigate();
+  const howRef = useRef<HTMLDivElement>(null);
+  const featuresRef = useRef<HTMLDivElement>(null);
+  const trackedHow = useRef(false);
+  const trackedFeatures = useRef(false);
+
+  useEffect(() => {
+    trackEvent('landing_page_viewed');
+  }, []);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            if (entry.target === howRef.current && !trackedHow.current) {
+              trackedHow.current = true;
+              trackEvent('how_it_works_viewed');
+            }
+            if (entry.target === featuresRef.current && !trackedFeatures.current) {
+              trackedFeatures.current = true;
+              trackEvent('features_viewed');
+            }
+          }
+        });
+      },
+      { threshold: 0.3 }
+    );
+    if (howRef.current) observer.observe(howRef.current);
+    if (featuresRef.current) observer.observe(featuresRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  const handleCTA = (location: string) => {
+    trackEvent('cta_clicked', { button_location: location });
+    navigate('/home');
+  };
+
+  const scrollToHow = () => {
+    howRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      {/* HERO */}
+      <section className="flex flex-col items-center text-center px-6 pt-16 pb-20 max-w-3xl mx-auto">
+        <img src={plotifyWordmark} alt="Plotify" className="w-48 md:w-64 mb-10" />
+        <h1 className="text-3xl md:text-5xl font-bold leading-tight mb-4">
+          Every episode. Every platform. One calendar.
+        </h1>
+        <p className="text-base md:text-lg text-muted-foreground max-w-xl mb-8 leading-relaxed">
+          Plotify tracks your favourite shows across Netflix, Disney+, Apple TV, Prime Video, and BBC iPlayer — so you never miss a drop.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <button
+            onClick={() => handleCTA('hero')}
+            className="rounded-xl px-8 py-3.5 text-sm font-semibold bg-gradient-to-r from-platform-prime to-platform-manual text-foreground hover:opacity-90 transition-opacity"
+          >
+            Try Plotify Free
+          </button>
+          <button
+            onClick={scrollToHow}
+            className="rounded-xl px-8 py-3.5 text-sm font-semibold border border-border text-foreground hover:bg-accent transition-colors"
+          >
+            See How It Works
+          </button>
+        </div>
+      </section>
+
+      {/* PLATFORM BAR */}
+      <section className="border-y border-border py-5 bg-surface-0">
+        <div className="flex items-center justify-center flex-wrap gap-x-2 gap-y-1 px-4 text-sm">
+          <span className="text-muted-foreground">Tracking shows across</span>
+          {PLATFORMS.map((p, i) => (
+            <span key={p.key}>
+              <span className={p.colorClass + ' font-semibold'}>{p.label}</span>
+              {i < PLATFORMS.length - 1 && <span className="text-muted-foreground mx-1">·</span>}
+            </span>
+          ))}
+        </div>
+      </section>
+
+      {/* HOW IT WORKS */}
+      <section ref={howRef} id="how-it-works" className="py-20 px-6 max-w-5xl mx-auto">
+        <h2 className="text-2xl md:text-3xl font-bold text-center mb-12">How It Works</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {HOW_IT_WORKS.map((item) => (
+            <div key={item.heading} className="flex flex-col items-center text-center space-y-4 p-6 rounded-2xl bg-card border border-border">
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-platform-prime to-platform-manual flex items-center justify-center">
+                <item.icon className="h-7 w-7 text-foreground" />
+              </div>
+              <h3 className="text-lg font-semibold">{item.heading}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">{item.body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* FEATURES */}
+      <section ref={featuresRef} className="py-20 px-6 max-w-5xl mx-auto space-y-16">
+        <div className="flex flex-col md:flex-row items-center gap-8">
+          <div className="flex-1 rounded-2xl bg-card border border-border p-8 flex items-center justify-center min-h-[200px]">
+            <div className="text-center space-y-2">
+              <CalendarDays className="h-16 w-16 text-platform-prime mx-auto" />
+              <p className="text-xs text-muted-foreground">Calendar View</p>
+            </div>
+          </div>
+          <div className="flex-1 space-y-3">
+            <h3 className="text-xl md:text-2xl font-bold">Your release schedule at a glance</h3>
+            <p className="text-muted-foreground leading-relaxed">
+              Week and month views show every upcoming episode across all your platforms in one place, colour-coded so you always know what's on where.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-col md:flex-row-reverse items-center gap-8">
+          <div className="flex-1 rounded-2xl bg-card border border-border p-8 flex items-center justify-center min-h-[200px]">
+            <div className="text-center space-y-2">
+              <Tv className="h-16 w-16 text-platform-disney mx-auto" />
+              <p className="text-xs text-muted-foreground">My Shows</p>
+            </div>
+          </div>
+          <div className="flex-1 space-y-3">
+            <h3 className="text-xl md:text-2xl font-bold">Everything you're watching, organised</h3>
+            <p className="text-muted-foreground leading-relaxed">
+              Your personal watchlist with watch progress, platform tags, and the ability to pause shows you've temporarily stepped away from.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-20 px-6 bg-surface-0 border-y border-border">
+        <div className="max-w-2xl mx-auto text-center space-y-5">
+          <h2 className="text-2xl md:text-3xl font-bold">Stop missing episodes.</h2>
+          <p className="text-muted-foreground">Free to use. No account needed. Just add your shows and go.</p>
+          <button
+            onClick={() => handleCTA('bottom')}
+            className="rounded-xl px-8 py-3.5 text-sm font-semibold bg-gradient-to-r from-platform-prime to-platform-manual text-foreground hover:opacity-90 transition-opacity"
+          >
+            Try Plotify Free
+          </button>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer className="py-10 px-6 text-center space-y-3">
+        <img src={plotifyIcon} alt="Plotify" className="w-10 h-10 mx-auto rounded-lg" />
+        <p className="text-xs text-muted-foreground">© 2026 Plotify</p>
+        <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
+          <a href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</a>
+          <span>·</span>
+          <a href="/terms" className="hover:text-foreground transition-colors">Terms of Service</a>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default LandingPage;
