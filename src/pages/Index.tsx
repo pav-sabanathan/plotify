@@ -18,6 +18,8 @@ const Dashboard = () => {
     localStorage.setItem('plotify-onboarding-done', '1');
   };
 
+  useEffect(() => { trackEvent('app_opened'); }, []);
+
   const isEmpty = shows.length === 0;
 
   return (

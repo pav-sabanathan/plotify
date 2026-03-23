@@ -120,7 +120,7 @@ const ShowGrid = () => {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button
-                      onClick={() => downloadICS(show)}
+                      onClick={() => { downloadICS(show); trackEvent('ics_exported', { platform: show.platform }); }}
                       className="rounded-md bg-secondary p-1 hover:bg-accent transition-colors text-white"
                     >
                       <CalendarPlus className="h-3.5 w-3.5" />
