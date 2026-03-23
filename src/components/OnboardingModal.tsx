@@ -36,6 +36,7 @@ const OnboardingModal = ({ onDismiss }: OnboardingModalProps) => {
 
   const handleAddShow = () => {
     onDismiss();
+    trackEvent('onboarding_completed');
     navigate('/add');
   };
 
