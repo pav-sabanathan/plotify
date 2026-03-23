@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MOCK_SHOW_DATABASE } from '@/data/mockShowDatabase';
+import { trackEvent } from '@/lib/posthog';
 
 const isPlaceholder = (poster: string) => !poster || poster === '/placeholder.svg';
 
