@@ -23,7 +23,7 @@ const SUGGESTED_SERVICES: { id: string; name: string; color: string }[] = [
   { id: 'suggested-sky', name: 'Sky', color: '#CC0000' },
   { id: 'suggested-nowtv', name: 'NOW TV', color: '#1B6B6B' },
   { id: 'suggested-channel4', name: 'Channel 4', color: '#7B00FF' },
-  { id: 'suggested-itvx', name: 'ITVX', color: '#000000' },
+  { id: 'suggested-itvx', name: 'ITVX', color: '#C8E63C' },
   { id: 'suggested-peacock', name: 'Peacock', color: '#F5C400' },
   { id: 'suggested-britbox', name: 'BritBox', color: '#00A8A8' },
 ];
