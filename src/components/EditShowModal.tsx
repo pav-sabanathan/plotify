@@ -14,6 +14,7 @@ const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Frid
 
 const EditShowModal = ({ show, onClose }: EditShowModalProps) => {
   const { updateShow, shows } = useShows();
+  const { services: customServices } = useCustomServices();
 
   const [form, setForm] = useState({
     name: show.name,
