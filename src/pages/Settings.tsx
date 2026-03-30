@@ -25,7 +25,7 @@ const SUGGESTED_SERVICES: { id: string; name: string; color: string }[] = [
   { id: 'suggested-channel4', name: 'Channel 4', color: '#7B00FF' },
   { id: 'suggested-itvx', name: 'ITVX', color: '#000000' },
   { id: 'suggested-peacock', name: 'Peacock', color: '#F5C400' },
-  { id: 'suggested-britbox', name: 'BritBox', color: '#F5C518' },
+  { id: 'suggested-britbox', name: 'BritBox', color: '#00A8A8' },
 ];
 
 const TOOLTIP_KEY = 'plotify_services_tooltip_dismissed';
