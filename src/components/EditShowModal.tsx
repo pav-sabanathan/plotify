@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useShows } from '@/context/ShowsContext';
+import { useCustomServices } from '@/context/CustomServicesContext';
 import { TrackedShow, Platform, PLATFORM_LABELS } from '@/types/show';
 import { XCircle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
