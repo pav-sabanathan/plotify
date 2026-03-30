@@ -183,6 +183,7 @@ const CalendarView = () => {
                 const builtIn = isBuiltInPlatform(event.platform);
                 const bgClass = builtIn ? PLATFORM_COLORS[event.platform as keyof typeof PLATFORM_COLORS] : undefined;
                 const customColor = !builtIn ? getPlatformColor(event.platform, customServices) : null;
+                const contrastClass = getPlatformContrastClass(event.platform, customServices);
                 return (
                   <button
                     key={`${event.showId}-${event.episode}-${i}`}
@@ -190,7 +191,7 @@ const CalendarView = () => {
                     className={cn(
                       'w-full text-left rounded px-1.5 py-0.5 text-[10px] font-medium truncate block transition-opacity hover:opacity-80',
                       bgClass,
-                      event.platform === 'apple' ? 'text-primary-foreground' : 'text-foreground',
+                      contrastClass,
                       event.isPast && 'opacity-40'
                     )}
                     style={customColor ? { backgroundColor: customColor } : undefined}

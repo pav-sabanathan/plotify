@@ -1,6 +1,5 @@
-import { Platform, PLATFORM_LABELS } from '@/types/show';
 import { useCustomServices } from '@/context/CustomServicesContext';
-import { isBuiltInPlatform, getPlatformLabel, getPlatformBgClass, getPlatformColor } from '@/lib/platformUtils';
+import { getPlatformLabel, getPlatformBgClass, getPlatformColor, getPlatformContrastClass } from '@/lib/platformUtils';
 import { cn } from '@/lib/utils';
 
 interface PlatformBadgeProps {
@@ -13,13 +12,14 @@ const PlatformBadge = ({ platform, className }: PlatformBadgeProps) => {
   const label = getPlatformLabel(platform, services);
   const bgClass = getPlatformBgClass(platform);
   const customColor = getPlatformColor(platform, services);
+  const contrastClass = getPlatformContrastClass(platform, services);
 
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium text-foreground',
+        'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
         bgClass,
-        platform === 'apple' && 'text-primary-foreground',
+        contrastClass,
         className
       )}
       style={customColor ? { backgroundColor: customColor } : undefined}
