@@ -380,6 +380,18 @@ const Settings = () => {
       </section>
 
       {showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} />}
+      {showColorWheel && (
+        <ColorWheelModal
+          initialColor={customColor}
+          onConfirm={(color) => {
+            setCustomColor(color);
+            setCustomColorInput(color);
+            setColorError('');
+            setShowColorWheel(false);
+          }}
+          onCancel={() => setShowColorWheel(false)}
+        />
+      )}
     </div>
   );
 };
