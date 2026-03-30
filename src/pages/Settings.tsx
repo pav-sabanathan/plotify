@@ -230,7 +230,13 @@ const Settings = () => {
             <div>
               <label className="text-xs text-muted-foreground block mb-1">Accent Colour</label>
               <div className="flex items-center gap-3">
-                <span className="h-9 w-9 rounded-md shrink-0 border border-border" style={{ backgroundColor: customColor }} />
+                <button
+                  type="button"
+                  onClick={() => setShowColorWheel(true)}
+                  className="h-9 w-9 rounded-md shrink-0 border border-border cursor-pointer hover:ring-2 hover:ring-ring transition-all"
+                  style={{ backgroundColor: customColor }}
+                  aria-label="Open colour picker"
+                />
                 <input
                   type="text"
                   value={customColorInput}
