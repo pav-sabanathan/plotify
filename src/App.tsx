@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ShowsProvider } from "./context/ShowsContext";
+import { CustomServicesProvider } from "./context/CustomServicesContext";
 import AppHeader from "./components/AppHeader";
 import BottomNav from "./components/BottomNav";
 import ShowDetailPanel from "./components/ShowDetailPanel";
@@ -47,6 +48,7 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <CustomServicesProvider>
         <ShowsProvider>
           <Toaster />
           <Sonner />
@@ -69,6 +71,7 @@ const App = () => {
             <ShowDetailPanel />
           </BrowserRouter>
         </ShowsProvider>
+        </CustomServicesProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useShows } from '@/context/ShowsContext';
+import { useCustomServices } from '@/context/CustomServicesContext';
 import { TrackedShow, Platform, PLATFORM_LABELS } from '@/types/show';
 import { XCircle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
@@ -13,6 +14,7 @@ const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Frid
 
 const EditShowModal = ({ show, onClose }: EditShowModalProps) => {
   const { updateShow, shows } = useShows();
+  const { services: customServices } = useCustomServices();
 
   const [form, setForm] = useState({
     name: show.name,
@@ -145,6 +147,13 @@ const EditShowModal = ({ show, onClose }: EditShowModalProps) => {
             {Object.entries(PLATFORM_LABELS).map(([key, label]) => (
               <option key={key} value={key}>{label}</option>
             ))}
+            {customServices.length > 0 && (
+              <optgroup label="My Platforms">
+                {customServices.map(s => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </optgroup>
+            )}
           </select>
           {errors.platform && <p className="text-xs text-destructive mt-1">{errors.platform}</p>}
         </div>

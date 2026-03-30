@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useShows } from '@/context/ShowsContext';
+import { useCustomServices } from '@/context/CustomServicesContext';
 import { TrackedShow, Platform, PLATFORM_LABELS } from '@/types/show';
 import { Search, Plus, XCircle } from 'lucide-react';
 import { format, addDays } from 'date-fns';
@@ -66,6 +67,7 @@ const searchableShows = MOCK_SHOW_DATABASE.filter(s => !s.manualOnly);
 
 const AddShowSearch = () => {
   const { shows, addShow, addShowFormRef } = useShows();
+  const { services: customServices } = useCustomServices();
   const [query, setQuery] = useState(addShowFormRef.current.query);
   const [showManual, setShowManual] = useState(addShowFormRef.current.showManual);
   const [manualForm, setManualForm] = useState(addShowFormRef.current.manualForm);
@@ -328,6 +330,13 @@ const AddShowSearch = () => {
               {Object.entries(PLATFORM_LABELS).map(([key, label]) => (
                 <option key={key} value={key}>{label}</option>
               ))}
+              {customServices.length > 0 && (
+                <optgroup label="My Platforms">
+                  {customServices.map(s => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
+                </optgroup>
+              )}
             </select>
             {errors.platform && <p className="text-xs text-destructive mt-1">{errors.platform}</p>}
           </div>

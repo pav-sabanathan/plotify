@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { useShows } from '@/context/ShowsContext';
+import { useCustomServices } from '@/context/CustomServicesContext';
 import { PLATFORM_LABELS, PLATFORM_COLORS, PLATFORM_BORDER_COLORS, Episode } from '@/types/show';
+import { isBuiltInPlatform, getPlatformColor, getPlatformLabel } from '@/lib/platformUtils';
 import PlatformBadge from './PlatformBadge';
 import StatusBadge from './StatusBadge';
 import FallbackPoster from './FallbackPoster';
@@ -18,9 +20,7 @@ const getDisplayStatus = (show: any) => {
   return show.status;
 };
 
-/** Build placeholder episodes for a historical season */
 function generateHistoricalEpisodes(seasonNum: number, count: number): Episode[] {
-  // Use a fixed past date for historical seasons
   const baseDate = new Date(2020 + seasonNum, 0, 1);
   return Array.from({ length: count }, (_, i) => ({
     id: `s${seasonNum}e${i + 1}`,
@@ -33,22 +33,20 @@ function generateHistoricalEpisodes(seasonNum: number, count: number): Episode[]
 
 const ShowDetailPanel = () => {
   const { shows, detailTarget, closeDetail, watchedEpisodes, toggleWatched, markAllWatched } = useShows();
+  const { services: customServices } = useCustomServices();
   const isMobile = useIsMobile();
   const episodeRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const listRef = useRef<HTMLDivElement>(null);
 
   const show = detailTarget ? shows.find(s => s.id === detailTarget.showId) : null;
 
-  // Determine the current (latest) season from the show's episodes
   const currentSeason = useMemo(() => {
     if (!show) return 1;
     return Math.max(...show.episodes.map(ep => ep.season), 1);
   }, [show]);
 
-  // Total number of seasons
   const totalSeasons = useMemo(() => {
     if (!show) return 1;
-    // Check mock database for the season count
     const mockEntry = MOCK_SHOW_DATABASE.find(m => m.id === show.id);
     if (mockEntry) return mockEntry.season;
     return currentSeason;
@@ -56,30 +54,25 @@ const ShowDetailPanel = () => {
 
   const [selectedSeason, setSelectedSeason] = useState(currentSeason);
 
-  // Reset selected season when show changes
   useEffect(() => {
     setSelectedSeason(currentSeason);
   }, [detailTarget?.showId, currentSeason]);
 
-  // Get episode count for a given season
   const getEpisodeCount = useMemo(() => {
     if (!show) return () => 10;
     const mockEntry = MOCK_SHOW_DATABASE.find(m => m.id === show.id);
     const defaultCount = mockEntry?.episodesPerSeason ?? 10;
     return (season: number) => {
-      // If the show has stored episodes for this season, use that count
       const stored = show.episodes.filter(ep => ep.season === season);
       if (stored.length > 0) return stored.length;
       return defaultCount;
     };
   }, [show]);
 
-  // Episodes for the selected season
   const seasonEpisodes = useMemo(() => {
     if (!show) return [];
     const stored = show.episodes.filter(ep => ep.season === selectedSeason);
     if (stored.length > 0) return stored;
-    // Generate historical episodes
     const count = getEpisodeCount(selectedSeason);
     return generateHistoricalEpisodes(selectedSeason, count);
   }, [show, selectedSeason, getEpisodeCount]);
@@ -103,34 +96,27 @@ const ShowDetailPanel = () => {
   today.setHours(0, 0, 0, 0);
   const watched = watchedEpisodes[show.id] || [];
 
-  // Per-season progress
   const seasonEpIds = seasonEpisodes.map(ep => ep.id);
   const watchedCount = watched.filter(id => seasonEpIds.includes(id)).length;
   const totalEps = seasonEpisodes.length;
   const progress = totalEps > 0 ? (watchedCount / totalEps) * 100 : 0;
-
-  // For historical seasons, all episodes are considered aired
   const isHistoricalSeason = selectedSeason < currentSeason;
 
+  const builtIn = isBuiltInPlatform(show.platform);
+  const bgClass = builtIn ? PLATFORM_COLORS[show.platform] : undefined;
+  const customColor = !builtIn ? getPlatformColor(show.platform, customServices) : null;
+
   const handleMarkAllSeason = () => {
-    // Mark all aired episodes of this season as watched
     const airedIds = seasonEpisodes
       .filter(ep => isHistoricalSeason || new Date(ep.airDate + 'T00:00:00') <= today)
       .map(ep => ep.id);
-    // Merge with existing watched (preserving other seasons)
-    const otherWatched = watched.filter(id => !seasonEpIds.includes(id));
-    // We need to use the context's raw setter — use markAllWatched for current season or toggleWatched
-    // Actually let's just call toggleWatched for unwatched ones
     const unwatched = airedIds.filter(id => !watched.includes(id));
     unwatched.forEach(id => toggleWatched(show.id, id));
   };
 
   return (
     <div className="fixed inset-0 z-50 flex" onClick={closeDetail}>
-      {/* Backdrop */}
       <div className="absolute inset-0 bg-background/60 backdrop-blur-sm" />
-
-      {/* Panel */}
       <div
         className={cn(
           'relative z-10 bg-card border overflow-y-auto',
@@ -140,7 +126,6 @@ const ShowDetailPanel = () => {
         )}
         onClick={e => e.stopPropagation()}
       >
-        {/* Header */}
         <div className="sticky top-0 z-10 bg-card/95 backdrop-blur-sm border-b border-border p-4 flex items-center justify-between">
           <h2 className="text-base font-semibold truncate">{show.name}</h2>
           <button onClick={closeDetail} className="text-muted-foreground hover:text-foreground transition-colors p-1">
@@ -149,11 +134,10 @@ const ShowDetailPanel = () => {
         </div>
 
         <div className="p-4 space-y-5">
-          {/* Show info */}
           <div className="flex gap-4">
             <div className="w-20 h-[120px] flex-shrink-0 rounded-lg overflow-hidden">
               {isPlaceholder(show.poster) ? (
-                <FallbackPoster name={show.name} platform={show.platform} className="w-full h-full" />
+                <FallbackPoster name={show.name} platform={show.platform} className="w-full h-full" customServices={customServices} />
               ) : (
                 <img src={show.poster} alt={show.name} className="w-full h-full object-cover" />
               )}
@@ -171,15 +155,17 @@ const ShowDetailPanel = () => {
                 </div>
                 <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
                   <div
-                    className={cn('h-full rounded-full transition-all duration-500', PLATFORM_COLORS[show.platform])}
-                    style={{ width: `${progress}%` }}
+                    className={cn('h-full rounded-full transition-all duration-500', bgClass)}
+                    style={{
+                      width: `${progress}%`,
+                      ...(customColor ? { backgroundColor: customColor } : {}),
+                    }}
                   />
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Season selector */}
           {totalSeasons > 1 && (
             <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
               {Array.from({ length: totalSeasons }, (_, i) => i + 1).map(s => (
@@ -189,9 +175,10 @@ const ShowDetailPanel = () => {
                   className={cn(
                     'flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors',
                     s === selectedSeason
-                      ? cn(PLATFORM_COLORS[show.platform], 'text-white')
+                      ? cn(bgClass, 'text-white')
                       : 'bg-secondary text-muted-foreground hover:text-foreground'
                   )}
+                  style={s === selectedSeason && customColor ? { backgroundColor: customColor } : undefined}
                 >
                   S{s}
                 </button>
@@ -199,7 +186,6 @@ const ShowDetailPanel = () => {
             </div>
           )}
 
-          {/* Mark all button */}
           <button
             onClick={handleMarkAllSeason}
             className="w-full rounded-lg bg-secondary hover:bg-accent text-secondary-foreground py-2 text-sm font-medium transition-colors flex items-center justify-center gap-2"
@@ -208,7 +194,6 @@ const ShowDetailPanel = () => {
             Mark All Aired as Watched
           </button>
 
-          {/* Episode list */}
           <div ref={listRef} className="space-y-1">
             <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
               Season {selectedSeason} Episodes
@@ -233,10 +218,11 @@ const ShowDetailPanel = () => {
                     className={cn(
                       'flex-shrink-0 h-5 w-5 rounded-md border-2 flex items-center justify-center transition-all',
                       isWatched
-                        ? cn(PLATFORM_COLORS[show.platform], 'border-transparent')
+                        ? cn(bgClass, 'border-transparent')
                         : 'border-muted-foreground/30 hover:border-muted-foreground/60',
                       !aired && 'cursor-not-allowed'
                     )}
+                    style={isWatched && customColor ? { backgroundColor: customColor, borderColor: 'transparent' } : undefined}
                   >
                     {isWatched && (
                       <svg className="h-3 w-3 text-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>

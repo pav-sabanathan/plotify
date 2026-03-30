@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react';
 import { useShows } from '@/context/ShowsContext';
+import { useCustomServices } from '@/context/CustomServicesContext';
 import {
   startOfWeek, endOfWeek, startOfMonth, endOfMonth,
   eachDayOfInterval, format, parseISO, isSameDay, addWeeks,
   subWeeks, addMonths, subMonths, isBefore, subDays
 } from 'date-fns';
 import { PLATFORM_COLORS, PLATFORM_LABELS } from '@/types/show';
+import { isBuiltInPlatform, getPlatformColor } from '@/lib/platformUtils';
 import { cn } from '@/lib/utils';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -27,6 +29,7 @@ interface CalendarEvent {
 
 const CalendarView = () => {
   const { shows, openDetail } = useShows();
+  const { services: customServices } = useCustomServices();
   const [mode, setMode] = useState<CalendarMode>(() => {
     const saved = sessionStorage.getItem('plotify-calendar-mode');
     return (saved === 'month' || saved === 'week') ? saved : 'week';
@@ -176,20 +179,26 @@ const CalendarView = () => {
               )}>
                 {format(day, 'd')}
               </span>
-              {dayEvents.map((event, i) => (
-                <button
-                  key={`${event.showId}-${event.episode}-${i}`}
-                  onClick={() => openDetail({ showId: event.showId, highlightEpisodeId: event.episodeId })}
-                  className={cn(
-                    'w-full text-left rounded px-1.5 py-0.5 text-[10px] font-medium truncate block transition-opacity hover:opacity-80',
-                    PLATFORM_COLORS[event.platform as keyof typeof PLATFORM_COLORS],
-                    event.platform === 'apple' ? 'text-primary-foreground' : 'text-foreground',
-                    event.isPast && 'opacity-40'
-                  )}
-                >
-                  {event.showName} {event.isFullSeason ? `S${event.season}` : `S${event.season}E${event.episode}`}
-                </button>
-              ))}
+              {dayEvents.map((event, i) => {
+                const builtIn = isBuiltInPlatform(event.platform);
+                const bgClass = builtIn ? PLATFORM_COLORS[event.platform as keyof typeof PLATFORM_COLORS] : undefined;
+                const customColor = !builtIn ? getPlatformColor(event.platform, customServices) : null;
+                return (
+                  <button
+                    key={`${event.showId}-${event.episode}-${i}`}
+                    onClick={() => openDetail({ showId: event.showId, highlightEpisodeId: event.episodeId })}
+                    className={cn(
+                      'w-full text-left rounded px-1.5 py-0.5 text-[10px] font-medium truncate block transition-opacity hover:opacity-80',
+                      bgClass,
+                      event.platform === 'apple' ? 'text-primary-foreground' : 'text-foreground',
+                      event.isPast && 'opacity-40'
+                    )}
+                    style={customColor ? { backgroundColor: customColor } : undefined}
+                  >
+                    {event.showName} {event.isFullSeason ? `S${event.season}` : `S${event.season}E${event.episode}`}
+                  </button>
+                );
+              })}
             </div>
           );
         })}

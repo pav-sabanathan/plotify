@@ -1,4 +1,5 @@
 import { TrackedShow, PLATFORM_LABELS } from '@/types/show';
+import { isBuiltInPlatform } from '@/lib/platformUtils';
 
 function pad(n: number): string {
   return String(n).padStart(2, '0');
@@ -28,7 +29,7 @@ function makeUID(showName: string, season: number, episode: number): string {
 }
 
 export function generateICS(show: TrackedShow): string {
-  const platform = PLATFORM_LABELS[show.platform];
+  const platform = isBuiltInPlatform(show.platform) ? PLATFORM_LABELS[show.platform] : show.platform;
   const spoilerFree = localStorage.getItem('plotify-spoiler-free-export') === 'true';
   const dtstamp = nowUTC();
   const lines: string[] = [
