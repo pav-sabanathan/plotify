@@ -1,13 +1,15 @@
 import { useMemo, useRef, useState, useEffect } from 'react';
 import { useShows } from '@/context/ShowsContext';
+import { useCustomServices } from '@/context/CustomServicesContext';
 import { differenceInDays, isAfter, isToday, parseISO } from 'date-fns';
 import { PLATFORM_BORDER_COLORS } from '@/types/show';
+import { isBuiltInPlatform, getPlatformColor } from '@/lib/platformUtils';
 import PlatformBadge from './PlatformBadge';
 import FallbackPoster from './FallbackPoster';
 import { cn } from '@/lib/utils';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const isPlaceholder = (poster: string) => !poster || poster === '/placeholder.svg';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface UpcomingEpisode {
   showId: string;
@@ -24,6 +26,7 @@ interface UpcomingEpisode {
 
 const UpNextStrip = () => {
   const { shows } = useShows();
+  const { services: customServices } = useCustomServices();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -38,15 +41,9 @@ const UpNextStrip = () => {
         const firstEp = show.episodes[0];
         if (firstEp && !isAfter(today, parseISO(firstEp.airDate))) {
           items.push({
-            showId: show.id,
-            showName: show.name,
-            poster: show.poster,
-            platform: show.platform,
-            season: firstEp.season,
-            episode: firstEp.episode,
-            airDate: firstEp.airDate,
-            isFullSeason: true,
-            totalEpisodes: show.episodes.length,
+            showId: show.id, showName: show.name, poster: show.poster,
+            platform: show.platform, season: firstEp.season, episode: firstEp.episode,
+            airDate: firstEp.airDate, isFullSeason: true, totalEpisodes: show.episodes.length,
           });
         }
       } else {
@@ -57,16 +54,9 @@ const UpNextStrip = () => {
         });
         if (nextEp) {
           items.push({
-            showId: show.id,
-            showName: show.name,
-            poster: show.poster,
-            platform: show.platform,
-            season: nextEp.season,
-            episode: nextEp.episode,
-            episodeTitle: nextEp.title,
-            airDate: nextEp.airDate,
-            isFullSeason: false,
-            totalEpisodes: 1,
+            showId: show.id, showName: show.name, poster: show.poster,
+            platform: show.platform, season: nextEp.season, episode: nextEp.episode,
+            episodeTitle: nextEp.title, airDate: nextEp.airDate, isFullSeason: false, totalEpisodes: 1,
           });
         }
       }
@@ -124,60 +114,55 @@ const UpNextStrip = () => {
       <h2 className="px-1 text-lg font-semibold tracking-tight">Up Next</h2>
       <div className="relative">
         {canScrollLeft && (
-          <button
-            onClick={() => scroll('left')}
-            className="absolute left-0 top-0 bottom-2 z-10 w-10 flex items-center justify-center bg-gradient-to-r from-background/90 to-transparent rounded-l-lg transition-opacity"
-          >
+          <button onClick={() => scroll('left')} className="absolute left-0 top-0 bottom-2 z-10 w-10 flex items-center justify-center bg-gradient-to-r from-background/90 to-transparent rounded-l-lg transition-opacity">
             <ChevronLeft className="h-5 w-5 text-foreground" />
           </button>
         )}
         {canScrollRight && (
-          <button
-            onClick={() => scroll('right')}
-            className="absolute right-0 top-0 bottom-2 z-10 w-10 flex items-center justify-center bg-gradient-to-l from-background/90 to-transparent rounded-r-lg transition-opacity"
-          >
+          <button onClick={() => scroll('right')} className="absolute right-0 top-0 bottom-2 z-10 w-10 flex items-center justify-center bg-gradient-to-l from-background/90 to-transparent rounded-r-lg transition-opacity">
             <ChevronRight className="h-5 w-5 text-foreground" />
           </button>
         )}
         <div ref={scrollRef} className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-          {upcoming.map((item, i) => (
-            <div
-              key={`${item.showId}-${i}`}
-              className={cn(
-                'flex-shrink-0 w-[260px] rounded-lg bg-card border overflow-hidden animate-fade-in',
-                PLATFORM_BORDER_COLORS[item.platform as keyof typeof PLATFORM_BORDER_COLORS],
-              )}
-              style={{ animationDelay: `${i * 60}ms` }}
-            >
-              <div className="flex gap-3 p-3">
-                {isPlaceholder(item.poster) ? (
-                  <FallbackPoster name={item.showName} platform={item.platform as any} className="w-16 h-24 flex-shrink-0" />
-                ) : (
-                  <img
-                    src={item.poster}
-                    alt={item.showName}
-                    className="w-16 h-24 rounded-md object-cover flex-shrink-0"
-                  />
+          {upcoming.map((item, i) => {
+            const builtIn = isBuiltInPlatform(item.platform);
+            const borderClass = builtIn ? PLATFORM_BORDER_COLORS[item.platform as keyof typeof PLATFORM_BORDER_COLORS] : undefined;
+            const customColor = !builtIn ? getPlatformColor(item.platform, customServices) : null;
+
+            return (
+              <div
+                key={`${item.showId}-${i}`}
+                className={cn(
+                  'flex-shrink-0 w-[260px] rounded-lg bg-card border overflow-hidden animate-fade-in',
+                  borderClass,
                 )}
-                <div className="flex flex-col justify-between min-w-0 flex-1">
-                  <div>
-                    <p className="font-semibold text-sm truncate">{item.showName}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {item.isFullSeason
-                        ? `S${item.season} — All Episodes`
-                        : `S${item.season} E${item.episode}`}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-between gap-2 mt-2">
-                    <PlatformBadge platform={item.platform as any} />
-                    <span className="text-xs font-medium text-foreground/80">
-                      {getDaysLabel(item.airDate)}
-                    </span>
+                style={{
+                  animationDelay: `${i * 60}ms`,
+                  ...(customColor ? { borderColor: customColor } : {}),
+                }}
+              >
+                <div className="flex gap-3 p-3">
+                  {isPlaceholder(item.poster) ? (
+                    <FallbackPoster name={item.showName} platform={item.platform} className="w-16 h-24 flex-shrink-0" customServices={customServices} />
+                  ) : (
+                    <img src={item.poster} alt={item.showName} className="w-16 h-24 rounded-md object-cover flex-shrink-0" />
+                  )}
+                  <div className="flex flex-col justify-between min-w-0 flex-1">
+                    <div>
+                      <p className="font-semibold text-sm truncate">{item.showName}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {item.isFullSeason ? `S${item.season} — All Episodes` : `S${item.season} E${item.episode}`}
+                      </p>
+                    </div>
+                    <div className="flex items-center justify-between gap-2 mt-2">
+                      <PlatformBadge platform={item.platform} />
+                      <span className="text-xs font-medium text-foreground/80">{getDaysLabel(item.airDate)}</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

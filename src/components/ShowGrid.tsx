@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useShows } from '@/context/ShowsContext';
+import { useCustomServices } from '@/context/CustomServicesContext';
 import PlatformBadge from './PlatformBadge';
 import StatusBadge from './StatusBadge';
 import FallbackPoster from './FallbackPoster';
@@ -8,6 +9,7 @@ import EditShowModal from './EditShowModal';
 import { Pause, Play, Trash2, Tv, CalendarPlus, Pencil } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PLATFORM_BORDER_COLORS, PLATFORM_COLORS, TrackedShow } from '@/types/show';
+import { isBuiltInPlatform, getPlatformColor } from '@/lib/platformUtils';
 import { downloadICS } from '@/lib/icsExport';
 import { trackEvent } from '@/lib/posthog';
 import { sortByName } from '@/lib/sortShows';
@@ -18,8 +20,6 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
-
-
 const isPlaceholder = (poster: string) => !poster || poster === '/placeholder.svg';
 
 const getDisplayStatus = (show: TrackedShow) => {
@@ -29,19 +29,11 @@ const getDisplayStatus = (show: TrackedShow) => {
   return show.status;
 };
 
-const PLATFORM_TEXT: Record<string, string> = {
-  netflix: 'text-platform-netflix',
-  disney: 'text-platform-disney',
-  apple: 'text-platform-apple',
-  prime: 'text-platform-prime',
-  bbc: 'text-platform-bbc',
-  manual: 'text-platform-manual',
-};
-
 const mockShowIds = new Set(MOCK_SHOW_DATABASE.map(s => s.id));
 
 const ShowGrid = () => {
   const { shows, removeShow, togglePause, watchedEpisodes, openDetail } = useShows();
+  const { services: customServices } = useCustomServices();
   const navigate = useNavigate();
   const [editingShow, setEditingShow] = useState<TrackedShow | null>(null);
   const [deletingShow, setDeletingShow] = useState<TrackedShow | null>(null);
@@ -71,25 +63,29 @@ const ShowGrid = () => {
         const totalEps = show.episodes.length;
         const watchedCount = watched.length;
         const progress = totalEps > 0 ? (watchedCount / totalEps) * 100 : 0;
+        const builtIn = isBuiltInPlatform(show.platform);
+        const customColor = !builtIn ? getPlatformColor(show.platform, customServices) : null;
+        const borderClass = builtIn ? PLATFORM_BORDER_COLORS[show.platform] : undefined;
+        const bgClass = builtIn ? PLATFORM_COLORS[show.platform] : undefined;
 
         return (
           <div
             key={show.id}
             className={cn(
               'group relative rounded-xl overflow-hidden bg-card border transition-all hover:scale-[1.02] animate-fade-in',
-              PLATFORM_BORDER_COLORS[show.platform],
+              borderClass,
               'border-opacity-30',
               show.paused && 'opacity-50'
             )}
-            style={{ animationDelay: `${i * 50}ms` }}
+            style={customColor ? { borderColor: customColor + '4D' } : undefined}
+            // 4D = ~30% opacity in hex
           >
-            {/* Clickable poster */}
             <button
               onClick={() => openDetail({ showId: show.id })}
               className="w-full aspect-[2/3] overflow-hidden block cursor-pointer"
             >
               {isPlaceholder(show.poster) ? (
-                <FallbackPoster name={show.name} platform={show.platform} className="w-full h-full" />
+                <FallbackPoster name={show.name} platform={show.platform} className="w-full h-full" customServices={customServices} />
               ) : (
                 <img src={show.poster} alt={show.name} className="w-full h-full object-cover" loading="lazy" />
               )}
@@ -102,15 +98,14 @@ const ShowGrid = () => {
                 <StatusBadge status={getDisplayStatus(show)} />
               </div>
 
-              {/* Progress indicator */}
               <div className="space-y-1">
                 <div className="flex justify-between items-center">
                   <span className="text-[10px] text-muted-foreground">{watchedCount}/{totalEps}</span>
                 </div>
                 <div className="h-1 bg-secondary rounded-full overflow-hidden">
                   <div
-                    className={cn('h-full rounded-full transition-all duration-500', PLATFORM_COLORS[show.platform])}
-                    style={{ width: `${progress}%` }}
+                    className={cn('h-full rounded-full transition-all duration-500', bgClass)}
+                    style={customColor ? { backgroundColor: customColor, width: `${progress}%` } : { width: `${progress}%` }}
                   />
                 </div>
               </div>
