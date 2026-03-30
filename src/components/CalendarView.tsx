@@ -6,8 +6,8 @@ import {
   eachDayOfInterval, format, parseISO, isSameDay, addWeeks,
   subWeeks, addMonths, subMonths, isBefore, subDays
 } from 'date-fns';
-import { PLATFORM_COLORS, PLATFORM_LABELS } from '@/types/show';
-import { isBuiltInPlatform, getPlatformColor } from '@/lib/platformUtils';
+import { PLATFORM_COLORS } from '@/types/show';
+import { isBuiltInPlatform, getPlatformColor, getPlatformContrastClass } from '@/lib/platformUtils';
 import { cn } from '@/lib/utils';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
