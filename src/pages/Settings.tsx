@@ -109,7 +109,9 @@ const Settings = () => {
     });
     setCustomName('');
     setCustomColor('#8B5CF6');
+    setCustomColorInput('#8B5CF6');
     setCustomError('');
+    setColorError('');
     setShowCustomForm(false);
   };
 
