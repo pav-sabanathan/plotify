@@ -225,14 +225,30 @@ const Settings = () => {
             <div>
               <label className="text-xs text-muted-foreground block mb-1">Accent Colour</label>
               <div className="flex items-center gap-3">
+                <span className="h-9 w-9 rounded-md shrink-0 border border-border" style={{ backgroundColor: customColor }} />
                 <input
-                  type="color"
-                  value={customColor}
-                  onChange={e => setCustomColor(e.target.value)}
-                  className="h-9 w-9 rounded-md border-0 cursor-pointer bg-transparent"
+                  type="text"
+                  value={customColorInput}
+                  onChange={e => {
+                    const val = e.target.value;
+                    setCustomColorInput(val);
+                    setColorError('');
+                    if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+                      setCustomColor(val);
+                    }
+                  }}
+                  onBlur={() => {
+                    if (!/^#[0-9A-Fa-f]{6}$/.test(customColorInput)) {
+                      setCustomColor('#8B5CF6');
+                      setCustomColorInput('#8B5CF6');
+                      setColorError('Please enter a valid hex colour');
+                    }
+                  }}
+                  placeholder="#8B5CF6"
+                  className="w-28 rounded-lg bg-secondary border border-border px-3 py-2 text-sm font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                 />
-                <span className="text-xs text-muted-foreground font-mono">{customColor.toUpperCase()}</span>
               </div>
+              {colorError && <p className="text-xs text-destructive mt-1">{colorError}</p>}
             </div>
             <div className="flex items-center justify-between pt-1">
               <button
