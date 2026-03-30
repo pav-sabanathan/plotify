@@ -71,6 +71,7 @@ const App = () => {
             <ShowDetailPanel />
           </BrowserRouter>
         </ShowsProvider>
+        </CustomServicesProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

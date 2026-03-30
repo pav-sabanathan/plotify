@@ -147,6 +147,13 @@ const EditShowModal = ({ show, onClose }: EditShowModalProps) => {
             {Object.entries(PLATFORM_LABELS).map(([key, label]) => (
               <option key={key} value={key}>{label}</option>
             ))}
+            {customServices.length > 0 && (
+              <optgroup label="My Platforms">
+                {customServices.map(s => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </optgroup>
+            )}
           </select>
           {errors.platform && <p className="text-xs text-destructive mt-1">{errors.platform}</p>}
         </div>
