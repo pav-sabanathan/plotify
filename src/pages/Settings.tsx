@@ -5,6 +5,7 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { useCustomServices, CustomService } from '@/context/CustomServicesContext';
 import FeedbackModal from '@/components/FeedbackModal';
+import ColorWheelModal from '@/components/ColorWheelModal';
 import { toast } from '@/hooks/use-toast';
 
 const BUILT_IN_SERVICES = [
