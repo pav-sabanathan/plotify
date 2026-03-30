@@ -1,19 +1,34 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, MessageSquare } from 'lucide-react';
+import { ChevronLeft, ChevronRight, MessageSquare, Plus, Check, Trash2, X } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { PLATFORM_LABELS } from '@/types/show';
+import { useCustomServices, CustomService } from '@/context/CustomServicesContext';
 import FeedbackModal from '@/components/FeedbackModal';
 import { toast } from '@/hooks/use-toast';
 
-const BUILT_IN_SERVICES: { key: string; label: string; color: string }[] = [
-  { key: 'netflix', label: 'Netflix', color: 'hsl(357, 91%, 47%)' },
-  { key: 'disney', label: 'Disney+', color: 'hsl(225, 91%, 44%)' },
-  { key: 'apple', label: 'Apple TV+', color: 'hsl(0, 0%, 63%)' },
-  { key: 'prime', label: 'Prime Video', color: 'hsl(196, 100%, 44%)' },
-  { key: 'bbc', label: 'BBC iPlayer', color: 'hsl(25, 100%, 50%)' },
+const BUILT_IN_SERVICES = [
+  { key: 'netflix', label: 'Netflix', color: '#E50914' },
+  { key: 'disney', label: 'Disney+', color: '#113CCF' },
+  { key: 'apple', label: 'Apple TV+', color: '#A0A0A0' },
+  { key: 'prime', label: 'Prime Video', color: '#00A8E1' },
+  { key: 'bbc', label: 'BBC iPlayer', color: '#FF6B00' },
 ];
+
+const SUGGESTED_SERVICES: { id: string; name: string; color: string }[] = [
+  { id: 'suggested-crave', name: 'Crave', color: '#0057FF' },
+  { id: 'suggested-paramount', name: 'Paramount+', color: '#0064FF' },
+  { id: 'suggested-max', name: 'Max / HBO Max', color: '#5822B4' },
+  { id: 'suggested-crunchyroll', name: 'Crunchyroll', color: '#F47521' },
+  { id: 'suggested-sky', name: 'Sky', color: '#CC0000' },
+  { id: 'suggested-nowtv', name: 'NOW TV', color: '#00B9A0' },
+  { id: 'suggested-channel4', name: 'Channel 4', color: '#7B00FF' },
+  { id: 'suggested-itvx', name: 'ITVX', color: '#000000' },
+  { id: 'suggested-peacock', name: 'Peacock', color: '#F5C400' },
+  { id: 'suggested-appletv-free', name: 'Apple TV', color: '#A0A0A0' },
+];
+
+const TOOLTIP_KEY = 'plotify_services_tooltip_dismissed';
 
 const STORAGE_KEYS = {
   showPastEpisodes: 'plotify-show-past-episodes',
@@ -22,15 +37,20 @@ const STORAGE_KEYS = {
 
 const Settings = () => {
   const navigate = useNavigate();
+  const { services, addService, removeService, hasService } = useCustomServices();
   const [showFeedback, setShowFeedback] = useState(false);
+  const [showCustomForm, setShowCustomForm] = useState(false);
+  const [customName, setCustomName] = useState('');
+  const [customColor, setCustomColor] = useState('#8B5CF6');
+  const [customError, setCustomError] = useState('');
+  const [tooltipDismissed, setTooltipDismissed] = useState(() => localStorage.getItem(TOOLTIP_KEY) === 'true');
 
-  const [showPastEpisodes, setShowPastEpisodes] = useState(() => {
-    return localStorage.getItem(STORAGE_KEYS.showPastEpisodes) === 'true';
-  });
-
-  const [spoilerFree, setSpoilerFree] = useState(() => {
-    return localStorage.getItem(STORAGE_KEYS.spoilerFree) === 'true';
-  });
+  const [showPastEpisodes, setShowPastEpisodes] = useState(() =>
+    localStorage.getItem(STORAGE_KEYS.showPastEpisodes) === 'true'
+  );
+  const [spoilerFree, setSpoilerFree] = useState(() =>
+    localStorage.getItem(STORAGE_KEYS.spoilerFree) === 'true'
+  );
 
   const togglePastEpisodes = (checked: boolean) => {
     setShowPastEpisodes(checked);
@@ -42,11 +62,70 @@ const Settings = () => {
     localStorage.setItem(STORAGE_KEYS.spoilerFree, String(checked));
   };
 
-  const handleAddService = () => {
+  const dismissTooltip = () => {
+    setTooltipDismissed(true);
+    localStorage.setItem(TOOLTIP_KEY, 'true');
+  };
+
+  const handleAddSuggested = (s: typeof SUGGESTED_SERVICES[0]) => {
+    if (hasService(s.id)) return;
+    addService({ id: s.id, name: s.name, color: s.color, suggested: true });
     toast({
-      title: 'Coming Soon 🚀',
-      description: 'Custom streaming services will be available in the next update.',
-      duration: 3000,
+      title: `✓ ${s.name} added to your platforms`,
+      className: 'bg-platform-prime/90 border-platform-prime text-foreground',
+      duration: 2000,
+    });
+  };
+
+  const handleSaveCustom = () => {
+    const trimmed = customName.trim();
+    if (!trimmed) {
+      setCustomError('Please enter a service name');
+      return;
+    }
+    // Check duplicates among built-in, suggested, and existing custom
+    const allNames = [
+      ...BUILT_IN_SERVICES.map(s => s.label.toLowerCase()),
+      ...services.map(s => s.name.toLowerCase()),
+    ];
+    if (allNames.includes(trimmed.toLowerCase())) {
+      toast({
+        title: 'A service with this name already exists',
+        variant: 'destructive',
+        className: 'bg-amber-600/90 border-amber-500 text-foreground',
+        duration: 3000,
+      });
+      return;
+    }
+    const id = 'custom-' + trimmed.toLowerCase().replace(/[^a-z0-9]/g, '') + '-' + Date.now();
+    addService({ id, name: trimmed, color: customColor, suggested: false });
+    toast({
+      title: `✓ ${trimmed} added to your platforms`,
+      className: 'bg-platform-prime/90 border-platform-prime text-foreground',
+      duration: 2000,
+    });
+    setCustomName('');
+    setCustomColor('#8B5CF6');
+    setCustomError('');
+    setShowCustomForm(false);
+  };
+
+  const handleDeleteService = (service: CustomService) => {
+    toast({
+      title: `Are you sure? This will remove ${service.name} from your Add Show options`,
+      duration: 8000,
+      action: (
+        <div className="flex gap-2 mt-1">
+          <button
+            onClick={() => {
+              removeService(service.id);
+            }}
+            className="rounded-md bg-destructive px-3 py-1 text-xs font-medium text-destructive-foreground hover:bg-destructive/90"
+          >
+            Confirm
+          </button>
+        </div>
+      ),
     });
   };
 
@@ -69,17 +148,13 @@ const Settings = () => {
         <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground px-1">
           Streaming Services
         </h2>
+
+        {/* Built-in services */}
         <div className="rounded-xl border border-border bg-card overflow-hidden divide-y divide-border">
           {BUILT_IN_SERVICES.map((service) => (
-            <div
-              key={service.key}
-              className="flex items-center justify-between px-4 py-3"
-            >
+            <div key={service.key} className="flex items-center justify-between px-4 py-3">
               <div className="flex items-center gap-3">
-                <span
-                  className="h-3 w-3 rounded-full shrink-0"
-                  style={{ backgroundColor: service.color }}
-                />
+                <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: service.color }} />
                 <span className="text-sm text-foreground">{service.label}</span>
               </div>
               <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
@@ -89,19 +164,120 @@ const Settings = () => {
           ))}
         </div>
 
-        {/* Custom Services placeholder */}
-        <div className="space-y-2">
-          <h3 className="text-xs font-medium text-muted-foreground/60 px-1">Custom Services</h3>
-          <div className="rounded-xl border border-border bg-card px-4 py-4 text-center space-y-3">
-            <p className="text-sm text-muted-foreground">No custom services added yet</p>
-            <button
-              onClick={handleAddService}
-              className="rounded-lg bg-secondary px-4 py-2 text-xs font-medium text-secondary-foreground hover:bg-accent transition-colors"
-            >
-              Add Streaming Service
+        {/* First-time tooltip */}
+        {!tooltipDismissed && (
+          <div className="flex items-center justify-between rounded-lg bg-secondary/60 px-3 py-2.5 animate-fade-in">
+            <p className="text-xs text-muted-foreground">
+              Don't see your platform? Add it from the suggestions above or create your own.
+            </p>
+            <button onClick={dismissTooltip} className="ml-2 shrink-0 text-muted-foreground hover:text-foreground transition-colors">
+              <X className="h-3.5 w-3.5" />
             </button>
           </div>
+        )}
+
+        {/* Suggested services */}
+        <div className="space-y-2">
+          <h3 className="text-xs font-medium text-muted-foreground px-1">Add a Platform</h3>
+          <div className="grid grid-cols-2 gap-2">
+            {SUGGESTED_SERVICES.map((s) => {
+              const added = hasService(s.id);
+              return (
+                <button
+                  key={s.id}
+                  onClick={() => !added && handleAddSuggested(s)}
+                  disabled={added}
+                  className={`flex items-center gap-2.5 rounded-lg border border-border bg-card px-3 py-2.5 text-left transition-colors ${
+                    added ? 'opacity-60 cursor-default' : 'hover:bg-secondary/50 cursor-pointer'
+                  }`}
+                >
+                  <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: s.color }} />
+                  <span className="text-sm text-foreground flex-1 truncate">{s.name}</span>
+                  {added ? (
+                    <Check className="h-4 w-4 text-green-500 shrink-0" />
+                  ) : (
+                    <Plus className="h-4 w-4 text-muted-foreground shrink-0" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
+
+        {/* Custom service form */}
+        {showCustomForm ? (
+          <div className="rounded-xl border border-border bg-card p-4 space-y-3 animate-fade-in">
+            <div>
+              <input
+                type="text"
+                value={customName}
+                onChange={e => { setCustomName(e.target.value); setCustomError(''); }}
+                placeholder="Service name"
+                className={`w-full rounded-lg bg-surface-2 border px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring ${
+                  customError ? 'border-destructive' : 'border-transparent'
+                }`}
+              />
+              {customError && <p className="text-xs text-destructive mt-1">{customError}</p>}
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground block mb-1">Accent Colour</label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="color"
+                  value={customColor}
+                  onChange={e => setCustomColor(e.target.value)}
+                  className="h-9 w-9 rounded-md border-0 cursor-pointer bg-transparent"
+                />
+                <span className="text-xs text-muted-foreground font-mono">{customColor.toUpperCase()}</span>
+              </div>
+            </div>
+            <div className="flex items-center justify-between pt-1">
+              <button
+                onClick={() => { setShowCustomForm(false); setCustomName(''); setCustomError(''); }}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveCustom}
+                className="rounded-lg px-5 py-2 text-sm font-semibold text-foreground hover:opacity-90 transition-opacity"
+                style={{ backgroundColor: '#8B5CF6' }}
+              >
+                Save Service
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={() => setShowCustomForm(true)}
+            className="w-full rounded-lg bg-secondary px-4 py-2.5 text-xs font-medium text-secondary-foreground hover:bg-accent transition-colors"
+          >
+            Add Streaming Service
+          </button>
+        )}
+
+        {/* My Platforms list */}
+        {services.length > 0 && (
+          <div className="space-y-2">
+            <h3 className="text-xs font-medium text-muted-foreground px-1">My Platforms</h3>
+            <div className="rounded-xl border border-border bg-card overflow-hidden divide-y divide-border">
+              {services.map((service) => (
+                <div key={service.id} className="flex items-center justify-between px-4 py-3">
+                  <div className="flex items-center gap-3">
+                    <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: service.color }} />
+                    <span className="text-sm text-foreground">{service.name}</span>
+                  </div>
+                  <button
+                    onClick={() => handleDeleteService(service)}
+                    className="rounded-md p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </section>
 
       <Separator className="bg-border" />
