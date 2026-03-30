@@ -21,7 +21,7 @@ const SUGGESTED_SERVICES: { id: string; name: string; color: string }[] = [
   { id: 'suggested-max', name: 'Max / HBO Max', color: '#5822B4' },
   { id: 'suggested-crunchyroll', name: 'Crunchyroll', color: '#F47521' },
   { id: 'suggested-sky', name: 'Sky', color: '#CC0000' },
-  { id: 'suggested-nowtv', name: 'NOW TV', color: '#00B9A0' },
+  { id: 'suggested-nowtv', name: 'NOW TV', color: '#1B6B6B' },
   { id: 'suggested-channel4', name: 'Channel 4', color: '#7B00FF' },
   { id: 'suggested-itvx', name: 'ITVX', color: '#000000' },
   { id: 'suggested-peacock', name: 'Peacock', color: '#F5C400' },
