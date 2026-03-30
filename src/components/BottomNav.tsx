@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, Tv, PlusCircle, Settings } from 'lucide-react';
+import { Home, Tv, PlusCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const tabs = [
