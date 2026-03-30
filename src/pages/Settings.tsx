@@ -114,7 +114,7 @@ const Settings = () => {
   };
 
   const handleDeleteService = (service: CustomService) => {
-    toast({
+    const { dismiss } = toast({
       title: `Are you sure? This will remove ${service.name} from your Add Show options`,
       duration: 8000,
       action: (
@@ -122,6 +122,7 @@ const Settings = () => {
           <button
             onClick={() => {
               removeService(service.id);
+              dismiss();
             }}
             className="rounded-md bg-destructive px-3 py-1 text-xs font-medium text-destructive-foreground hover:bg-destructive/90"
           >
