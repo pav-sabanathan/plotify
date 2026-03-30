@@ -46,6 +46,7 @@ const Settings = () => {
   const [customColorInput, setCustomColorInput] = useState('#8B5CF6');
   const [customError, setCustomError] = useState('');
   const [colorError, setColorError] = useState('');
+  const [showColorWheel, setShowColorWheel] = useState(false);
   const [tooltipDismissed, setTooltipDismissed] = useState(() => localStorage.getItem(TOOLTIP_KEY) === 'true');
 
   const [showPastEpisodes, setShowPastEpisodes] = useState(() =>
