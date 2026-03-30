@@ -36,12 +36,18 @@ const CalendarView = () => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
+  const showPastEpisodes = localStorage.getItem('plotify-show-past-episodes') === 'true';
+  const thirtyDaysAgo = subDays(today, 30);
+
   const events = useMemo(() => {
     const allEvents: CalendarEvent[] = [];
     shows.filter(s => !s.paused).forEach(show => {
       if (show.releaseType === 'full-season') {
         const firstEp = show.episodes[0];
         if (firstEp) {
+          const isPast = isBefore(parseISO(firstEp.airDate), today);
+          if (isPast && !showPastEpisodes) return;
+          if (isPast && isBefore(parseISO(firstEp.airDate), thirtyDaysAgo)) return;
           allEvents.push({
             showId: show.id,
             showName: show.name,
@@ -53,11 +59,14 @@ const CalendarView = () => {
             episodeTitle: firstEp.title,
             airDate: firstEp.airDate,
             isFullSeason: true,
-            isPast: isBefore(parseISO(firstEp.airDate), today),
+            isPast,
           });
         }
       } else {
         show.episodes.forEach(ep => {
+          const isPast = isBefore(parseISO(ep.airDate), today);
+          if (isPast && !showPastEpisodes) return;
+          if (isPast && isBefore(parseISO(ep.airDate), thirtyDaysAgo)) return;
           allEvents.push({
             showId: show.id,
             showName: show.name,
@@ -69,13 +78,13 @@ const CalendarView = () => {
             episodeTitle: ep.title,
             airDate: ep.airDate,
             isFullSeason: false,
-            isPast: isBefore(parseISO(ep.airDate), today),
+            isPast,
           });
         });
       }
     });
     return allEvents;
-  }, [shows, today]);
+  }, [shows, today, showPastEpisodes]);
 
   const days = useMemo(() => {
     if (mode === 'week') {
