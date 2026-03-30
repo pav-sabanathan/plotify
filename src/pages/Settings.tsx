@@ -10,7 +10,7 @@ import { toast } from '@/hooks/use-toast';
 const BUILT_IN_SERVICES = [
   { key: 'netflix', label: 'Netflix', color: '#E50914' },
   { key: 'disney', label: 'Disney+', color: '#113CCF' },
-  { key: 'apple', label: 'Apple TV+', color: '#A0A0A0' },
+  { key: 'apple', label: 'Apple TV', color: '#A0A0A0' },
   { key: 'prime', label: 'Prime Video', color: '#00A8E1' },
   { key: 'bbc', label: 'BBC iPlayer', color: '#FF6B00' },
 ];
@@ -25,7 +25,7 @@ const SUGGESTED_SERVICES: { id: string; name: string; color: string }[] = [
   { id: 'suggested-channel4', name: 'Channel 4', color: '#7B00FF' },
   { id: 'suggested-itvx', name: 'ITVX', color: '#000000' },
   { id: 'suggested-peacock', name: 'Peacock', color: '#F5C400' },
-  { id: 'suggested-appletv-free', name: 'Apple TV', color: '#A0A0A0' },
+  { id: 'suggested-britbox', name: 'BritBox', color: '#F5C518' },
 ];
 
 const TOOLTIP_KEY = 'plotify_services_tooltip_dismissed';
