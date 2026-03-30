@@ -29,6 +29,7 @@ interface CalendarEvent {
 
 const CalendarView = () => {
   const { shows, openDetail } = useShows();
+  const { services: customServices } = useCustomServices();
   const [mode, setMode] = useState<CalendarMode>(() => {
     const saved = sessionStorage.getItem('plotify-calendar-mode');
     return (saved === 'month' || saved === 'week') ? saved : 'week';
