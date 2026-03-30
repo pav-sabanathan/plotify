@@ -255,7 +255,7 @@ const Settings = () => {
             </div>
             <div className="flex items-center justify-between pt-1">
               <button
-                onClick={() => { setShowCustomForm(false); setCustomName(''); setCustomError(''); }}
+                onClick={() => { setShowCustomForm(false); setCustomName(''); setCustomError(''); setCustomColor('#8B5CF6'); setCustomColorInput('#8B5CF6'); setColorError(''); }}
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 Cancel
