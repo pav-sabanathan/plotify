@@ -29,6 +29,7 @@ function makeUID(showName: string, season: number, episode: number): string {
 
 export function generateICS(show: TrackedShow): string {
   const platform = PLATFORM_LABELS[show.platform];
+  const spoilerFree = localStorage.getItem('plotify-spoiler-free-export') === 'true';
   const dtstamp = nowUTC();
   const lines: string[] = [
     'BEGIN:VCALENDAR',
@@ -42,28 +43,34 @@ export function generateICS(show: TrackedShow): string {
 
   if (show.releaseType === 'full-season' && show.episodes.length > 0) {
     const ep = show.episodes[0];
+    const summary = `${show.name} S${ep.season} — All Episodes Available`;
     lines.push(
       'BEGIN:VEVENT',
       `UID:${makeUID(show.name, ep.season, 0)}`,
       `DTSTAMP:${dtstamp}`,
       `DTSTART:${toICSDate(ep.airDate, show.releaseTime)}`,
       `DTEND:${addHour(ep.airDate, show.releaseTime)}`,
-      `SUMMARY:${show.name} S${ep.season} — All Episodes Available`,
-      `DESCRIPTION:All episodes of ${show.name} Season ${ep.season} available on ${platform}`,
-      'END:VEVENT',
+      `SUMMARY:${summary}`,
     );
+    if (!spoilerFree) {
+      lines.push(`DESCRIPTION:All episodes of ${show.name} Season ${ep.season} available on ${platform}`);
+    }
+    lines.push('END:VEVENT');
   } else {
     for (const ep of show.episodes) {
+      const summary = `${show.name} — S${ep.season}E${ep.episode}`;
       lines.push(
         'BEGIN:VEVENT',
         `UID:${makeUID(show.name, ep.season, ep.episode)}`,
         `DTSTAMP:${dtstamp}`,
         `DTSTART:${toICSDate(ep.airDate, show.releaseTime)}`,
         `DTEND:${addHour(ep.airDate, show.releaseTime)}`,
-        `SUMMARY:${show.name} — S${ep.season}E${ep.episode}`,
-        `DESCRIPTION:New episode of ${show.name} available on ${platform}`,
-        'END:VEVENT',
+        `SUMMARY:${summary}`,
       );
+      if (!spoilerFree) {
+        lines.push(`DESCRIPTION:New episode of ${show.name} available on ${platform}`);
+      }
+      lines.push('END:VEVENT');
     }
   }
 
