@@ -3,7 +3,7 @@ import { useShows } from '@/context/ShowsContext';
 import {
   startOfWeek, endOfWeek, startOfMonth, endOfMonth,
   eachDayOfInterval, format, parseISO, isSameDay, addWeeks,
-  subWeeks, addMonths, subMonths, isBefore
+  subWeeks, addMonths, subMonths, isBefore, subDays
 } from 'date-fns';
 import { PLATFORM_COLORS, PLATFORM_LABELS } from '@/types/show';
 import { cn } from '@/lib/utils';
