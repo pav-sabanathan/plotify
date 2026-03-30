@@ -42,7 +42,9 @@ const Settings = () => {
   const [showCustomForm, setShowCustomForm] = useState(false);
   const [customName, setCustomName] = useState('');
   const [customColor, setCustomColor] = useState('#8B5CF6');
+  const [customColorInput, setCustomColorInput] = useState('#8B5CF6');
   const [customError, setCustomError] = useState('');
+  const [colorError, setColorError] = useState('');
   const [tooltipDismissed, setTooltipDismissed] = useState(() => localStorage.getItem(TOOLTIP_KEY) === 'true');
 
   const [showPastEpisodes, setShowPastEpisodes] = useState(() =>
@@ -86,6 +88,7 @@ const Settings = () => {
     // Check duplicates among built-in, suggested, and existing custom
     const allNames = [
       ...BUILT_IN_SERVICES.map(s => s.label.toLowerCase()),
+      ...SUGGESTED_SERVICES.map(s => s.name.toLowerCase()),
       ...services.map(s => s.name.toLowerCase()),
     ];
     if (allNames.includes(trimmed.toLowerCase())) {
@@ -106,12 +109,14 @@ const Settings = () => {
     });
     setCustomName('');
     setCustomColor('#8B5CF6');
+    setCustomColorInput('#8B5CF6');
     setCustomError('');
+    setColorError('');
     setShowCustomForm(false);
   };
 
   const handleDeleteService = (service: CustomService) => {
-    toast({
+    const { dismiss } = toast({
       title: `Are you sure? This will remove ${service.name} from your Add Show options`,
       duration: 8000,
       action: (
@@ -119,6 +124,7 @@ const Settings = () => {
           <button
             onClick={() => {
               removeService(service.id);
+              dismiss();
             }}
             className="rounded-md bg-destructive px-3 py-1 text-xs font-medium text-destructive-foreground hover:bg-destructive/90"
           >
@@ -222,18 +228,34 @@ const Settings = () => {
             <div>
               <label className="text-xs text-muted-foreground block mb-1">Accent Colour</label>
               <div className="flex items-center gap-3">
+                <span className="h-9 w-9 rounded-md shrink-0 border border-border" style={{ backgroundColor: customColor }} />
                 <input
-                  type="color"
-                  value={customColor}
-                  onChange={e => setCustomColor(e.target.value)}
-                  className="h-9 w-9 rounded-md border-0 cursor-pointer bg-transparent"
+                  type="text"
+                  value={customColorInput}
+                  onChange={e => {
+                    const val = e.target.value;
+                    setCustomColorInput(val);
+                    setColorError('');
+                    if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+                      setCustomColor(val);
+                    }
+                  }}
+                  onBlur={() => {
+                    if (!/^#[0-9A-Fa-f]{6}$/.test(customColorInput)) {
+                      setCustomColor('#8B5CF6');
+                      setCustomColorInput('#8B5CF6');
+                      setColorError('Please enter a valid hex colour');
+                    }
+                  }}
+                  placeholder="#8B5CF6"
+                  className="w-28 rounded-lg bg-secondary border border-border px-3 py-2 text-sm font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                 />
-                <span className="text-xs text-muted-foreground font-mono">{customColor.toUpperCase()}</span>
               </div>
+              {colorError && <p className="text-xs text-destructive mt-1">{colorError}</p>}
             </div>
             <div className="flex items-center justify-between pt-1">
               <button
-                onClick={() => { setShowCustomForm(false); setCustomName(''); setCustomError(''); }}
+                onClick={() => { setShowCustomForm(false); setCustomName(''); setCustomError(''); setCustomColor('#8B5CF6'); setCustomColorInput('#8B5CF6'); setColorError(''); }}
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 Cancel
