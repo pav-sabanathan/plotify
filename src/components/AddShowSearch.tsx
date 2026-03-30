@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useShows } from '@/context/ShowsContext';
+import { useCustomServices } from '@/context/CustomServicesContext';
 import { TrackedShow, Platform, PLATFORM_LABELS } from '@/types/show';
 import { Search, Plus, XCircle } from 'lucide-react';
 import { format, addDays } from 'date-fns';
