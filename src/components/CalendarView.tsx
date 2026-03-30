@@ -6,8 +6,8 @@ import {
   eachDayOfInterval, format, parseISO, isSameDay, addWeeks,
   subWeeks, addMonths, subMonths, isBefore, subDays
 } from 'date-fns';
-import { PLATFORM_COLORS, PLATFORM_LABELS } from '@/types/show';
-import { isBuiltInPlatform, getPlatformColor } from '@/lib/platformUtils';
+import { PLATFORM_COLORS } from '@/types/show';
+import { isBuiltInPlatform, getPlatformColor, getPlatformContrastClass } from '@/lib/platformUtils';
 import { cn } from '@/lib/utils';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -183,6 +183,7 @@ const CalendarView = () => {
                 const builtIn = isBuiltInPlatform(event.platform);
                 const bgClass = builtIn ? PLATFORM_COLORS[event.platform as keyof typeof PLATFORM_COLORS] : undefined;
                 const customColor = !builtIn ? getPlatformColor(event.platform, customServices) : null;
+                const contrastClass = getPlatformContrastClass(event.platform, customServices);
                 return (
                   <button
                     key={`${event.showId}-${event.episode}-${i}`}
@@ -190,7 +191,7 @@ const CalendarView = () => {
                     className={cn(
                       'w-full text-left rounded px-1.5 py-0.5 text-[10px] font-medium truncate block transition-opacity hover:opacity-80',
                       bgClass,
-                      event.platform === 'apple' ? 'text-primary-foreground' : 'text-foreground',
+                      contrastClass,
                       event.isPast && 'opacity-40'
                     )}
                     style={customColor ? { backgroundColor: customColor } : undefined}
