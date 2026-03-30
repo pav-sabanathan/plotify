@@ -67,6 +67,7 @@ const searchableShows = MOCK_SHOW_DATABASE.filter(s => !s.manualOnly);
 
 const AddShowSearch = () => {
   const { shows, addShow, addShowFormRef } = useShows();
+  const { services: customServices } = useCustomServices();
   const [query, setQuery] = useState(addShowFormRef.current.query);
   const [showManual, setShowManual] = useState(addShowFormRef.current.showManual);
   const [manualForm, setManualForm] = useState(addShowFormRef.current.manualForm);
