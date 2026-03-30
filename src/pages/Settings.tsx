@@ -5,6 +5,7 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { useCustomServices, CustomService } from '@/context/CustomServicesContext';
 import FeedbackModal from '@/components/FeedbackModal';
+import ColorWheelModal from '@/components/ColorWheelModal';
 import { toast } from '@/hooks/use-toast';
 
 const BUILT_IN_SERVICES = [
@@ -45,6 +46,7 @@ const Settings = () => {
   const [customColorInput, setCustomColorInput] = useState('#8B5CF6');
   const [customError, setCustomError] = useState('');
   const [colorError, setColorError] = useState('');
+  const [showColorWheel, setShowColorWheel] = useState(false);
   const [tooltipDismissed, setTooltipDismissed] = useState(() => localStorage.getItem(TOOLTIP_KEY) === 'true');
 
   const [showPastEpisodes, setShowPastEpisodes] = useState(() =>
@@ -228,7 +230,13 @@ const Settings = () => {
             <div>
               <label className="text-xs text-muted-foreground block mb-1">Accent Colour</label>
               <div className="flex items-center gap-3">
-                <span className="h-9 w-9 rounded-md shrink-0 border border-border" style={{ backgroundColor: customColor }} />
+                <button
+                  type="button"
+                  onClick={() => setShowColorWheel(true)}
+                  className="h-9 w-9 rounded-md shrink-0 border border-border cursor-pointer hover:ring-2 hover:ring-ring transition-all"
+                  style={{ backgroundColor: customColor }}
+                  aria-label="Open colour picker"
+                />
                 <input
                   type="text"
                   value={customColorInput}
@@ -372,6 +380,18 @@ const Settings = () => {
       </section>
 
       {showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} />}
+      {showColorWheel && (
+        <ColorWheelModal
+          initialColor={customColor}
+          onConfirm={(color) => {
+            setCustomColor(color);
+            setCustomColorInput(color);
+            setColorError('');
+            setShowColorWheel(false);
+          }}
+          onCancel={() => setShowColorWheel(false)}
+        />
+      )}
     </div>
   );
 };
