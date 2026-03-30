@@ -86,6 +86,7 @@ const Settings = () => {
     // Check duplicates among built-in, suggested, and existing custom
     const allNames = [
       ...BUILT_IN_SERVICES.map(s => s.label.toLowerCase()),
+      ...SUGGESTED_SERVICES.map(s => s.name.toLowerCase()),
       ...services.map(s => s.name.toLowerCase()),
     ];
     if (allNames.includes(trimmed.toLowerCase())) {
