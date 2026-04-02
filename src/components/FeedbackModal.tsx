@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
+import { useForm } from '@formspree/react';
 import { toast } from '@/hooks/use-toast';
 
 const emojis = ['😕', '😐', '🙂', '😊', '🤩'];
@@ -7,19 +8,18 @@ const emojis = ['😕', '😐', '🙂', '😊', '🤩'];
 const FeedbackModal = ({ onClose }: { onClose: () => void }) => {
   const [selected, setSelected] = useState<number | null>(null);
   const [text, setText] = useState('');
+  const [, handleSubmit] = useForm('xvzvbyva');
 
   const handleSend = async () => {
     onClose();
     try {
-      const res = await fetch('https://formspree.io/f/xvzvbyva', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: text,
-          rating: selected !== null ? emojis[selected] : null,
-        }),
-      });
-      if (!res.ok) throw new Error();
+      const result = await handleSubmit({
+        message: text,
+        rating: selected !== null ? emojis[selected] : null,
+      } as any);
+      if (result && result.body && 'errors' in result.body) {
+        throw new Error();
+      }
       toast({
         title: 'Thanks for the feedback! 🙏',
         className: 'bg-platform-prime/90 border-platform-prime text-foreground',
