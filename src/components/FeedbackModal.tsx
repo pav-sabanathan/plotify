@@ -8,13 +8,30 @@ const FeedbackModal = ({ onClose }: { onClose: () => void }) => {
   const [selected, setSelected] = useState<number | null>(null);
   const [text, setText] = useState('');
 
-  const handleSend = () => {
+  const handleSend = async () => {
     onClose();
-    toast({
-      title: 'Thanks for the feedback! 🙏',
-      className: 'bg-platform-prime/90 border-platform-prime text-foreground',
-      duration: 2500,
-    });
+    try {
+      const res = await fetch('https://formspree.io/f/xvzvbyva', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: text,
+          rating: selected !== null ? emojis[selected] : null,
+        }),
+      });
+      if (!res.ok) throw new Error();
+      toast({
+        title: 'Thanks for the feedback! 🙏',
+        className: 'bg-platform-prime/90 border-platform-prime text-foreground',
+        duration: 2500,
+      });
+    } catch {
+      toast({
+        title: 'Something went wrong. Please try again.',
+        variant: 'destructive',
+        duration: 3000,
+      });
+    }
   };
 
   return (
