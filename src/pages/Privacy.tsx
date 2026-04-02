@@ -13,7 +13,7 @@ const Privacy = () => {
       <img src={plotifyLogo} alt="Plotify" className="w-10 h-10 rounded-lg object-contain" />
       <h1 className="text-xl font-bold">Privacy Policy</h1>
       <p className="text-sm text-muted-foreground leading-relaxed">
-        Plotify is a personal project and does not currently collect, store, or share any personal data. This policy will be updated when user accounts and data storage are introduced in a future version. For any questions contact: hello@plotify.app
+        Plotify is a personal project and does not currently collect, store, or share any personal data. This policy will be updated when user accounts and data storage are introduced in a future version. For any questions contact: Plotify is a personal project and does not currently collect, store, or share any personal data. This policy will be updated when user accounts and data storage are introduced in a future version. For any questions contact: hello@getplotify.app
       </p>
     </div>
   );

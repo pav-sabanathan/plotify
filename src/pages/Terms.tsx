@@ -13,7 +13,7 @@ const Terms = () => {
       <img src={plotifyLogo} alt="Plotify" className="w-10 h-10 rounded-lg object-contain" />
       <h1 className="text-xl font-bold">Terms of Service</h1>
       <p className="text-sm text-muted-foreground leading-relaxed">
-        Plotify is provided free of charge as a personal project with no guarantees of accuracy or availability. Episode release data is for informational purposes only. Use of this service is at your own discretion. For any questions contact: hello@plotify.app
+        Plotify is provided free of charge as a personal project with no guarantees of accuracy or availability. Episode release data is for informational purposes only. Use of this service is at your own discretion. For any questions contact: Plotify is provided free of charge as a personal project with no guarantees of accuracy or availability. Episode release data is for informational purposes only. Use of this service is at your own discretion. For any questions contact: hello@getplotify.app
       </p>
     </div>
   );
