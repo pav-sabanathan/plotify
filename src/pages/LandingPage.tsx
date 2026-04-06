@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Tv, CalendarDays, CheckCircle } from 'lucide-react';
 import { PLATFORM_LABELS } from '@/types/show';
@@ -20,25 +20,14 @@ const HOW_IT_WORKS = [
   { icon: CheckCircle, heading: 'Track Your Progress', body: 'Mark episodes as watched and never lose your place again.' },
 ];
 
-// Curated popular shows with TMDb poster paths
-const HERO_POSTERS = [
-  { title: 'Stranger Things', path: '/AoftfHMYLmeMRYDraQANpI4sNOB.jpg' },
-  { title: 'The Bear', path: '/sHFlNpJl78UqSBkRSGEVafbfxJH.jpg' },
-  { title: 'House of the Dragon', path: '/t9XkeE7HzOsdQcDDDapDYh8Rrmt.jpg' },
-  { title: 'The Last of Us', path: '/uKvVjHNqB5VmOrdxqAt2F7J78ED.jpg' },
-  { title: 'Severance', path: '/pDq0kTMvQjSJcFPmwMwECflyzSv.jpg' },
-  { title: 'Shogun', path: '/7O4iVfOMQmdCSxhOg1WnzG1AgmT.jpg' },
-  { title: 'Fallout', path: '/AnsSKR9LuK0P5szFMOOgJqsNmn9.jpg' },
-  { title: 'Slow Horses', path: '/jXHMJk3sMbJMRCIm63bIWcZ5GCj.jpg' },
-  { title: 'The Penguin', path: '/aK07nhAPx9yfixhLQKixr3QERXV.jpg' },
-  { title: 'Arcane', path: '/fqldf2t8ztc9aiwn3k6mlX3tvRT.jpg' },
-  { title: 'Wednesday', path: '/9PFonBhy4cQy7Jz20NpMygczOkv.jpg' },
-  { title: 'Andor', path: '/59SVNwLfoMnZPPB6ukW6dlPxAdI.jpg' },
-  { title: 'Squid Game', path: '/dDlEmu3EZ0Pgg93K2SVNLCjCSvE.jpg' },
-  { title: 'Reacher', path: '/pBPxKV5AZ7xNOjqi1VPDh6LVab5.jpg' },
+const HERO_SHOW_NAMES = [
+  'Stranger Things', 'The Bear', 'House of the Dragon', 'The Last of Us',
+  'Severance', 'Shogun', 'Fallout', 'Slow Horses', 'The Penguin',
+  'Arcane', 'Wednesday', 'Andor', 'Squid Game', 'Reacher',
 ];
 
-const TMDB_IMG = 'https://image.tmdb.org/t/p/w342';
+const TMDB_IMG = 'https://image.tmdb.org/t/p/w300';
+const TMDB_TOKEN = import.meta.env.VITE_PUBLIC_TMDB_TOKEN;
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -46,9 +35,35 @@ const LandingPage = () => {
   const featuresRef = useRef<HTMLDivElement>(null);
   const trackedHow = useRef(false);
   const trackedFeatures = useRef(false);
+  const [posters, setPosters] = useState<{ title: string; url: string }[]>([]);
 
   useEffect(() => {
     trackEvent('landing_page_viewed');
+  }, []);
+
+  useEffect(() => {
+    if (!TMDB_TOKEN) return;
+    const fetchPosters = async () => {
+      const results = await Promise.all(
+        HERO_SHOW_NAMES.map(async (name) => {
+          try {
+            const res = await fetch(
+              `https://api.themoviedb.org/3/search/tv?query=${encodeURIComponent(name)}&page=1`,
+              { headers: { Authorization: `Bearer ${TMDB_TOKEN}` } }
+            );
+            if (!res.ok) return null;
+            const data = await res.json();
+            const poster_path = data.results?.[0]?.poster_path;
+            if (!poster_path) return null;
+            return { title: name, url: `${TMDB_IMG}${poster_path}` };
+          } catch {
+            return null;
+          }
+        })
+      );
+      setPosters(results.filter((r): r is { title: string; url: string } => r !== null));
+    };
+    fetchPosters();
   }, []);
 
   useEffect(() => {
@@ -88,21 +103,23 @@ const LandingPage = () => {
       {/* HERO */}
       <section className="relative overflow-hidden">
         {/* Poster grid background */}
-        <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
-          <div className="grid grid-cols-5 md:grid-cols-7 gap-2 md:gap-3 opacity-40 rotate-[-4deg] scale-110 pointer-events-none select-none">
-            {[...HERO_POSTERS, ...HERO_POSTERS].slice(0, 14).map((show, i) => (
-              <img
-                key={`${show.title}-${i}`}
-                src={`${TMDB_IMG}${show.path}`}
-                alt=""
-                loading={i < 7 ? 'eager' : 'lazy'}
-                className="w-20 md:w-28 rounded-lg object-cover aspect-[2/3]"
-              />
-            ))}
+        {posters.length > 0 && (
+          <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
+            <div className="grid grid-cols-5 md:grid-cols-7 gap-2 md:gap-3 opacity-40 rotate-[-4deg] scale-110 pointer-events-none select-none">
+              {posters.slice(0, 14).map((show, i) => (
+                <img
+                  key={`${show.title}-${i}`}
+                  src={show.url}
+                  alt=""
+                  loading={i < 7 ? 'eager' : 'lazy'}
+                  className="w-20 md:w-28 rounded-lg object-cover aspect-[2/3]"
+                />
+              ))}
+            </div>
+            {/* Gradient overlay for readability */}
+            <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/50 to-background" />
           </div>
-          {/* Gradient overlay for readability */}
-          <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/50 to-background" />
-        </div>
+        )}
 
         {/* Hero content */}
         <div className="relative z-10 flex flex-col items-center text-center px-6 pt-16 pb-20 max-w-3xl mx-auto">
