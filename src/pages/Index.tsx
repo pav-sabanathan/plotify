@@ -6,7 +6,7 @@ import CalendarView from '@/components/CalendarView';
 import EmptyDashboard from '@/components/EmptyDashboard';
 import OnboardingModal from '@/components/OnboardingModal';
 import AppFooter from '@/components/AppFooter';
-import GuestBanner from '@/components/GuestBanner';
+
 import EmailVerificationBanner from '@/components/EmailVerificationBanner';
 import { trackEvent } from '@/lib/posthog';
 
@@ -29,7 +29,6 @@ const Dashboard = () => {
   return (
     <div className={`px-4 max-w-4xl mx-auto ${isEmpty ? '' : 'space-y-6 pb-20'}`}>
       {user && <EmailVerificationBanner />}
-      <GuestBanner />
       {isEmpty ? (
         <>
           <EmptyDashboard />
