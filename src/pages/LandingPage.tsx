@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Tv, CalendarDays, CheckCircle } from 'lucide-react';
 import { PLATFORM_LABELS } from '@/types/show';
@@ -20,25 +20,14 @@ const HOW_IT_WORKS = [
   { icon: CheckCircle, heading: 'Track Your Progress', body: 'Mark episodes as watched and never lose your place again.' },
 ];
 
-// Curated popular shows with TMDb poster paths
-const HERO_POSTERS = [
-  { title: 'Stranger Things', path: '/AoftfHMYLmeMRYDraQANpI4sNOB.jpg' },
-  { title: 'The Bear', path: '/sHFlNpJl78UqSBkRSGEVafbfxJH.jpg' },
-  { title: 'House of the Dragon', path: '/t9XkeE7HzOsdQcDDDapDYh8Rrmt.jpg' },
-  { title: 'The Last of Us', path: '/uKvVjHNqB5VmOrdxqAt2F7J78ED.jpg' },
-  { title: 'Severance', path: '/pDq0kTMvQjSJcFPmwMwECflyzSv.jpg' },
-  { title: 'Shogun', path: '/7O4iVfOMQmdCSxhOg1WnzG1AgmT.jpg' },
-  { title: 'Fallout', path: '/AnsSKR9LuK0P5szFMOOgJqsNmn9.jpg' },
-  { title: 'Slow Horses', path: '/jXHMJk3sMbJMRCIm63bIWcZ5GCj.jpg' },
-  { title: 'The Penguin', path: '/aK07nhAPx9yfixhLQKixr3QERXV.jpg' },
-  { title: 'Arcane', path: '/fqldf2t8ztc9aiwn3k6mlX3tvRT.jpg' },
-  { title: 'Wednesday', path: '/9PFonBhy4cQy7Jz20NpMygczOkv.jpg' },
-  { title: 'Andor', path: '/59SVNwLfoMnZPPB6ukW6dlPxAdI.jpg' },
-  { title: 'Squid Game', path: '/dDlEmu3EZ0Pgg93K2SVNLCjCSvE.jpg' },
-  { title: 'Reacher', path: '/pBPxKV5AZ7xNOjqi1VPDh6LVab5.jpg' },
+const HERO_SHOW_NAMES = [
+  'Stranger Things', 'The Bear', 'House of the Dragon', 'The Last of Us',
+  'Severance', 'Shogun', 'Fallout', 'Slow Horses', 'The Penguin',
+  'Arcane', 'Wednesday', 'Andor', 'Squid Game', 'Reacher',
 ];
 
-const TMDB_IMG = 'https://image.tmdb.org/t/p/w342';
+const TMDB_IMG = 'https://image.tmdb.org/t/p/w300';
+const TMDB_TOKEN = import.meta.env.VITE_PUBLIC_TMDB_TOKEN;
 
 const LandingPage = () => {
   const navigate = useNavigate();
