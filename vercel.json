@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/api/calendar/:token*",
+      "destination": "https://dgallkbqqitadzicyltl.supabase.co/functions/v1/webcal/:token*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
