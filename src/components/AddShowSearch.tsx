@@ -99,20 +99,13 @@ const AddShowSearch = () => {
 
   // Watchmode streaming suggestion state
   const [streamingSuggestion, setStreamingSuggestion] = useState<StreamingSuggestion | null>(null);
-  const [pendingTmdbResult, setPendingTmdbResult] = useState<TmdbResult | null>(null);
+  const [lastAddedShow, setLastAddedShow] = useState<{ id: string; name: string } | null>(null);
 
   const handleSelectTmdb = async (result: TmdbResult) => {
     if (shows.some(s => s.name.toLowerCase() === result.name.toLowerCase())) {
       toast({ title: `${result.name} is already in your watchlist`, variant: 'destructive', className: 'bg-amber-600/90 border-amber-500 text-foreground', duration: 3000 });
       return;
     }
-
-    // Fetch streaming suggestion in background (don't block)
-    setStreamingSuggestion(null);
-    setPendingTmdbResult(result);
-    fetchStreamingAvailability(result.id).then(suggestion => {
-      setStreamingSuggestion(suggestion);
-    });
 
     // Fetch TVMaze schedule data
     const schedule = await fetchTvMazeSchedule(result.name);
@@ -136,6 +129,14 @@ const AddShowSearch = () => {
     addShow(tracked);
     trackEvent('show_added_search', { platform: 'tmdb', tmdb_id: result.id });
     toast({ title: `✓ ${result.name} added to your watchlist`, className: 'bg-platform-prime/90 border-platform-prime text-foreground', duration: 2000 });
+
+    // Fetch streaming suggestion in background
+    setStreamingSuggestion(null);
+    setLastAddedShow({ id, name: result.name });
+    fetchStreamingAvailability(result.id).then(suggestion => {
+      if (suggestion) setStreamingSuggestion(suggestion);
+    });
+
     setQuery('');
     setResults([]);
   };
