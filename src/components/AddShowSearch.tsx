@@ -97,11 +97,22 @@ const AddShowSearch = () => {
     doSearch(val);
   };
 
+  // Watchmode streaming suggestion state
+  const [streamingSuggestion, setStreamingSuggestion] = useState<StreamingSuggestion | null>(null);
+  const [pendingTmdbResult, setPendingTmdbResult] = useState<TmdbResult | null>(null);
+
   const handleSelectTmdb = async (result: TmdbResult) => {
     if (shows.some(s => s.name.toLowerCase() === result.name.toLowerCase())) {
       toast({ title: `${result.name} is already in your watchlist`, variant: 'destructive', className: 'bg-amber-600/90 border-amber-500 text-foreground', duration: 3000 });
       return;
     }
+
+    // Fetch streaming suggestion in background (don't block)
+    setStreamingSuggestion(null);
+    setPendingTmdbResult(result);
+    fetchStreamingAvailability(result.id).then(suggestion => {
+      setStreamingSuggestion(suggestion);
+    });
 
     // Fetch TVMaze schedule data
     const schedule = await fetchTvMazeSchedule(result.name);
