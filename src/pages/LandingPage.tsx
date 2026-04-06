@@ -101,7 +101,7 @@ const LandingPage = () => {
             ))}
           </div>
           {/* Gradient overlay for readability */}
-          <div className="absolute inset-0 bg-gradient-to-b from-background via-background/80 to-background" />
+          <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/50 to-background" />
         </div>
 
         {/* Hero content */}
