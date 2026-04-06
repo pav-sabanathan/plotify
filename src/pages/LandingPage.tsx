@@ -35,9 +35,35 @@ const LandingPage = () => {
   const featuresRef = useRef<HTMLDivElement>(null);
   const trackedHow = useRef(false);
   const trackedFeatures = useRef(false);
+  const [posters, setPosters] = useState<{ title: string; url: string }[]>([]);
 
   useEffect(() => {
     trackEvent('landing_page_viewed');
+  }, []);
+
+  useEffect(() => {
+    if (!TMDB_TOKEN) return;
+    const fetchPosters = async () => {
+      const results = await Promise.all(
+        HERO_SHOW_NAMES.map(async (name) => {
+          try {
+            const res = await fetch(
+              `https://api.themoviedb.org/3/search/tv?query=${encodeURIComponent(name)}&page=1`,
+              { headers: { Authorization: `Bearer ${TMDB_TOKEN}` } }
+            );
+            if (!res.ok) return null;
+            const data = await res.json();
+            const poster_path = data.results?.[0]?.poster_path;
+            if (!poster_path) return null;
+            return { title: name, url: `${TMDB_IMG}${poster_path}` };
+          } catch {
+            return null;
+          }
+        })
+      );
+      setPosters(results.filter((r): r is { title: string; url: string } => r !== null));
+    };
+    fetchPosters();
   }, []);
 
   useEffect(() => {
@@ -77,21 +103,23 @@ const LandingPage = () => {
       {/* HERO */}
       <section className="relative overflow-hidden">
         {/* Poster grid background */}
-        <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
-          <div className="grid grid-cols-5 md:grid-cols-7 gap-2 md:gap-3 opacity-40 rotate-[-4deg] scale-110 pointer-events-none select-none">
-            {[...HERO_POSTERS, ...HERO_POSTERS].slice(0, 14).map((show, i) => (
-              <img
-                key={`${show.title}-${i}`}
-                src={`${TMDB_IMG}${show.path}`}
-                alt=""
-                loading={i < 7 ? 'eager' : 'lazy'}
-                className="w-20 md:w-28 rounded-lg object-cover aspect-[2/3]"
-              />
-            ))}
+        {posters.length > 0 && (
+          <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
+            <div className="grid grid-cols-5 md:grid-cols-7 gap-2 md:gap-3 opacity-40 rotate-[-4deg] scale-110 pointer-events-none select-none">
+              {posters.slice(0, 14).map((show, i) => (
+                <img
+                  key={`${show.title}-${i}`}
+                  src={show.url}
+                  alt=""
+                  loading={i < 7 ? 'eager' : 'lazy'}
+                  className="w-20 md:w-28 rounded-lg object-cover aspect-[2/3]"
+                />
+              ))}
+            </div>
+            {/* Gradient overlay for readability */}
+            <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/50 to-background" />
           </div>
-          {/* Gradient overlay for readability */}
-          <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/50 to-background" />
-        </div>
+        )}
 
         {/* Hero content */}
         <div className="relative z-10 flex flex-col items-center text-center px-6 pt-16 pb-20 max-w-3xl mx-auto">
