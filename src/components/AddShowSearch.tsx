@@ -307,18 +307,6 @@ const AddShowSearch = () => {
               {customServices.length > 0 && (<optgroup label="My Platforms">{customServices.map(s => (<option key={s.id} value={s.id}>{s.name}</option>))}</optgroup>)}
             </select>
             {errors.platform && <p className="text-xs text-destructive mt-1">{errors.platform}</p>}
-            {streamingSuggestion && pendingTmdbResult && (
-              <button
-                type="button"
-                onClick={() => {
-                  setManualForm(prev => ({ ...prev, platform: streamingSuggestion.platformKey as Platform }));
-                  if (errors.platform) setErrors(prev => ({ ...prev, platform: undefined }));
-                }}
-                className="text-xs text-muted-foreground hover:text-foreground transition-colors mt-1 text-left"
-              >
-                Available on <span className="font-medium text-foreground">{streamingSuggestion.platformName}</span> in your region
-              </button>
-            )}
           </div>
           <div className="grid gap-3" style={{ gridTemplateColumns: '1fr 1fr' }}>
             <div>
