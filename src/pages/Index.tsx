@@ -6,7 +6,7 @@ import CalendarView from '@/components/CalendarView';
 import EmptyDashboard from '@/components/EmptyDashboard';
 import OnboardingModal from '@/components/OnboardingModal';
 import AppFooter from '@/components/AppFooter';
-import GuestBanner from '@/components/GuestBanner';
+
 import EmailVerificationBanner from '@/components/EmailVerificationBanner';
 import { trackEvent } from '@/lib/posthog';
 
