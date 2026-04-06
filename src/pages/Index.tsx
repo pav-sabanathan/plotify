@@ -1,14 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useShows } from '@/context/ShowsContext';
+import { useAuth } from '@/context/AuthContext';
 import UpNextStrip from '@/components/UpNextStrip';
 import CalendarView from '@/components/CalendarView';
 import EmptyDashboard from '@/components/EmptyDashboard';
 import OnboardingModal from '@/components/OnboardingModal';
 import AppFooter from '@/components/AppFooter';
+import GuestBanner from '@/components/GuestBanner';
+import EmailVerificationBanner from '@/components/EmailVerificationBanner';
 import { trackEvent } from '@/lib/posthog';
 
 const Dashboard = () => {
   const { shows } = useShows();
+  const { user } = useAuth();
   const [showOnboarding, setShowOnboarding] = useState(() => {
     return !localStorage.getItem('plotify-onboarding-done') && !localStorage.getItem('plotify-shows');
   });
@@ -24,9 +28,11 @@ const Dashboard = () => {
 
   return (
     <div className={`px-4 max-w-4xl mx-auto ${isEmpty ? '' : 'space-y-6 pb-20'}`}>
+      {user && <EmailVerificationBanner />}
       {isEmpty ? (
         <>
           <EmptyDashboard />
+          <div className="mt-4"><GuestBanner /></div>
           <div className="hidden md:block">
             <AppFooter />
           </div>
@@ -35,6 +41,7 @@ const Dashboard = () => {
         <>
           <UpNextStrip />
           <CalendarView />
+          <GuestBanner />
           <AppFooter />
         </>
       )}

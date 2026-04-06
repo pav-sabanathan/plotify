@@ -5,9 +5,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ShowsProvider } from "./context/ShowsContext";
 import { CustomServicesProvider } from "./context/CustomServicesContext";
+import { AuthProvider } from "./context/AuthContext";
 import AppHeader from "./components/AppHeader";
 import BottomNav from "./components/BottomNav";
 import ShowDetailPanel from "./components/ShowDetailPanel";
+import AuthModal from "./components/AuthModal";
+import ProfileSetupModal from "./components/ProfileSetupModal";
 import Index from "./pages/Index";
 import MyShows from "./pages/MyShows";
 import AddShow from "./pages/AddShow";
@@ -48,30 +51,34 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <CustomServicesProvider>
-        <ShowsProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              {/* Landing page — skip if returning user */}
-              <Route
-                path="/"
-                element={hasExistingShows() ? <Navigate to="/home" replace /> : <LandingPage />}
-              />
-              {/* App routes */}
-              <Route path="/home" element={<AppShell><Index /></AppShell>} />
-              <Route path="/my-shows" element={<AppShell><MyShows /></AppShell>} />
-              <Route path="/add" element={<AppShell><AddShow /></AppShell>} />
-              <Route path="/privacy" element={<AppShell><Privacy /></AppShell>} />
-              <Route path="/terms" element={<AppShell><Terms /></AppShell>} />
-              <Route path="/settings" element={<AppShell><Settings /></AppShell>} />
-              <Route path="*" element={<AppShell><NotFound /></AppShell>} />
-            </Routes>
-            <ShowDetailPanel />
-          </BrowserRouter>
-        </ShowsProvider>
-        </CustomServicesProvider>
+        <AuthProvider>
+          <CustomServicesProvider>
+          <ShowsProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                {/* Landing page — skip if returning user */}
+                <Route
+                  path="/"
+                  element={hasExistingShows() ? <Navigate to="/home" replace /> : <LandingPage />}
+                />
+                {/* App routes */}
+                <Route path="/home" element={<AppShell><Index /></AppShell>} />
+                <Route path="/my-shows" element={<AppShell><MyShows /></AppShell>} />
+                <Route path="/add" element={<AppShell><AddShow /></AppShell>} />
+                <Route path="/privacy" element={<AppShell><Privacy /></AppShell>} />
+                <Route path="/terms" element={<AppShell><Terms /></AppShell>} />
+                <Route path="/settings" element={<AppShell><Settings /></AppShell>} />
+                <Route path="*" element={<AppShell><NotFound /></AppShell>} />
+              </Routes>
+              <ShowDetailPanel />
+              <AuthModal />
+              <ProfileSetupModal />
+            </BrowserRouter>
+          </ShowsProvider>
+          </CustomServicesProvider>
+        </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );
