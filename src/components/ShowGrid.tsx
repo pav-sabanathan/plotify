@@ -14,7 +14,7 @@ import { downloadICS } from '@/lib/icsExport';
 import { trackEvent } from '@/lib/posthog';
 import { sortByName } from '@/lib/sortShows';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { MOCK_SHOW_DATABASE } from '@/data/mockShowDatabase';
+
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -29,7 +29,7 @@ const getDisplayStatus = (show: TrackedShow) => {
   return show.status;
 };
 
-const mockShowIds = new Set(MOCK_SHOW_DATABASE.map(s => s.id));
+
 
 const ShowGrid = () => {
   const { shows, removeShow, togglePause, watchedEpisodes, openDetail } = useShows();
@@ -130,19 +130,17 @@ const ShowGrid = () => {
                   </TooltipTrigger>
                   <TooltipContent>Export to calendar</TooltipContent>
                 </Tooltip>
-                {!mockShowIds.has(show.id) && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={() => setEditingShow(show)}
-                        className="rounded-md bg-secondary p-1 hover:bg-accent transition-colors text-white"
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent>Edit show</TooltipContent>
-                  </Tooltip>
-                )}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => setEditingShow(show)}
+                      className="rounded-md bg-secondary p-1 hover:bg-accent transition-colors text-white"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>Edit show</TooltipContent>
+                </Tooltip>
                 <button
                   onClick={() => setDeletingShow(show)}
                   className="rounded-md bg-destructive/10 p-1 text-destructive hover:bg-destructive/20 transition-colors"
