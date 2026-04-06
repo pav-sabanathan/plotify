@@ -12,6 +12,8 @@ import GuestBanner from "./components/GuestBanner";
 import ShowDetailPanel from "./components/ShowDetailPanel";
 import AuthModal from "./components/AuthModal";
 import ProfileSetupModal from "./components/ProfileSetupModal";
+import ImportDataWrapper from "./components/ImportDataWrapper";
+import OfflineBanner from "./components/OfflineBanner";
 import Index from "./pages/Index";
 import MyShows from "./pages/MyShows";
 import AddShow from "./pages/AddShow";
@@ -38,6 +40,7 @@ const hasExistingShows = (): boolean => {
 
 const AppShell = ({ children }: { children: React.ReactNode }) => (
   <div className="min-h-screen bg-background">
+    <OfflineBanner />
     <GuestBanner />
     <AppHeader />
     {children}
@@ -77,6 +80,7 @@ const App = () => {
               <ShowDetailPanel />
               <AuthModal />
               <ProfileSetupModal />
+              <ImportDataWrapper />
             </BrowserRouter>
           </ShowsProvider>
           </CustomServicesProvider>

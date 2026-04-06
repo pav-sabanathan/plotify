@@ -77,6 +77,7 @@ export type Database = {
         Row: {
           created_at: string
           current_episode: number | null
+          first_episode_date: string | null
           id: string
           is_full_season_drop: boolean
           is_paused: boolean
@@ -84,15 +85,18 @@ export type Database = {
           poster_url: string | null
           release_day: string | null
           release_time: string | null
+          release_type: string
           season: number | null
           status: string
           title: string
           tmdb_id: number | null
+          total_episodes: number | null
           user_id: string
         }
         Insert: {
           created_at?: string
           current_episode?: number | null
+          first_episode_date?: string | null
           id?: string
           is_full_season_drop?: boolean
           is_paused?: boolean
@@ -100,15 +104,18 @@ export type Database = {
           poster_url?: string | null
           release_day?: string | null
           release_time?: string | null
+          release_type?: string
           season?: number | null
           status: string
           title: string
           tmdb_id?: number | null
+          total_episodes?: number | null
           user_id: string
         }
         Update: {
           created_at?: string
           current_episode?: number | null
+          first_episode_date?: string | null
           id?: string
           is_full_season_drop?: boolean
           is_paused?: boolean
@@ -116,10 +123,12 @@ export type Database = {
           poster_url?: string | null
           release_day?: string | null
           release_time?: string | null
+          release_type?: string
           season?: number | null
           status?: string
           title?: string
           tmdb_id?: number | null
+          total_episodes?: number | null
           user_id?: string
         }
         Relationships: [
