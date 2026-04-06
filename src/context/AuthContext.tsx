@@ -53,6 +53,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
+  const ensureWebcalToken = useCallback(async (userId: string) => {
+    const { data } = await supabase
+      .from('webcal_subscriptions')
+      .select('id')
+      .eq('user_id', userId)
+      .limit(1);
+    if (!data || data.length === 0) {
+      await supabase.from('webcal_subscriptions').insert({
+        user_id: userId,
+        token: crypto.randomUUID(),
+      });
+    }
+  }, []);
+
   useEffect(() => {
     // Set up auth state listener BEFORE getting session
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -61,7 +75,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(currentSession?.user ?? null);
         if (currentSession?.user) {
           // Use setTimeout to avoid Supabase client deadlock
-          setTimeout(() => fetchProfile(currentSession.user.id), 0);
+          setTimeout(() => {
+            fetchProfile(currentSession.user.id);
+            ensureWebcalToken(currentSession.user.id);
+          }, 0);
         } else {
           setProfile(null);
         }
