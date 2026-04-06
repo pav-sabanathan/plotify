@@ -6,6 +6,7 @@ import { Search, Plus, XCircle, Loader2, ArrowLeft, Film } from 'lucide-react';
 import PlatformBadge from './PlatformBadge';
 import { toast } from '@/hooks/use-toast';
 import { trackEvent } from '@/lib/posthog';
+import { fetchStreamingAvailability, StreamingSuggestion } from '@/lib/watchmode';
 
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const TMDB_TOKEN = import.meta.env.VITE_PUBLIC_TMDB_TOKEN as string;
@@ -51,7 +52,7 @@ async function fetchTvMazeSchedule(title: string): Promise<{ day?: number; time?
 }
 
 const AddShowSearch = () => {
-  const { shows, addShow, addShowFormRef } = useShows();
+  const { shows, addShow, updateShow, addShowFormRef } = useShows();
   const { services: customServices } = useCustomServices();
   const [query, setQuery] = useState(addShowFormRef.current.query);
   const [showManual, setShowManual] = useState(addShowFormRef.current.showManual);
@@ -96,6 +97,10 @@ const AddShowSearch = () => {
     doSearch(val);
   };
 
+  // Watchmode streaming suggestion state
+  const [streamingSuggestion, setStreamingSuggestion] = useState<StreamingSuggestion | null>(null);
+  const [lastAddedShow, setLastAddedShow] = useState<{ id: string; name: string } | null>(null);
+
   const handleSelectTmdb = async (result: TmdbResult) => {
     if (shows.some(s => s.name.toLowerCase() === result.name.toLowerCase())) {
       toast({ title: `${result.name} is already in your watchlist`, variant: 'destructive', className: 'bg-amber-600/90 border-amber-500 text-foreground', duration: 3000 });
@@ -124,6 +129,14 @@ const AddShowSearch = () => {
     addShow(tracked);
     trackEvent('show_added_search', { platform: 'tmdb', tmdb_id: result.id });
     toast({ title: `✓ ${result.name} added to your watchlist`, className: 'bg-platform-prime/90 border-platform-prime text-foreground', duration: 2000 });
+
+    // Fetch streaming suggestion in background
+    setStreamingSuggestion(null);
+    setLastAddedShow({ id, name: result.name });
+    fetchStreamingAvailability(result.id).then(suggestion => {
+      if (suggestion) setStreamingSuggestion(suggestion);
+    });
+
     setQuery('');
     setResults([]);
   };
@@ -204,6 +217,35 @@ const AddShowSearch = () => {
               TMDB
             </a>
           </p>
+
+          {/* Streaming suggestion banner */}
+          {streamingSuggestion && lastAddedShow && (
+            <div className="flex items-center justify-between rounded-lg bg-secondary/60 px-3 py-2.5 animate-fade-in">
+              <p className="text-xs text-muted-foreground">
+                <span className="font-medium text-foreground">{lastAddedShow.name}</span> is available on{' '}
+                <span className="font-medium text-foreground">{streamingSuggestion.platformName}</span> in your region
+              </p>
+              <div className="flex items-center gap-2 ml-2 shrink-0">
+                <button
+                  onClick={() => {
+                    updateShow(lastAddedShow.id, { platform: streamingSuggestion.platformKey as Platform });
+                    toast({ title: `✓ Platform updated to ${streamingSuggestion.platformName}`, className: 'bg-platform-prime/90 border-platform-prime text-foreground', duration: 2000 });
+                    setStreamingSuggestion(null);
+                    setLastAddedShow(null);
+                  }}
+                  className="text-xs font-medium text-primary hover:underline"
+                >
+                  Set Platform
+                </button>
+                <button
+                  onClick={() => { setStreamingSuggestion(null); setLastAddedShow(null); }}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <XCircle className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Error state */}
           {searchError && (
@@ -295,8 +337,6 @@ const AddShowSearch = () => {
             </select>
             {errors.platform && <p className="text-xs text-destructive mt-1">{errors.platform}</p>}
           </div>
-
-          {/* Release Day / Time */}
           <div className="grid gap-3" style={{ gridTemplateColumns: '1fr 1fr' }}>
             <div>
               <label className="text-xs text-muted-foreground">Release Day</label>

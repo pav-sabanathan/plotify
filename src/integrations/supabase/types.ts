@@ -81,6 +81,7 @@ export type Database = {
           id: string
           is_full_season_drop: boolean
           is_paused: boolean
+          last_checked_at: string | null
           platform: string
           poster_url: string | null
           release_day: string | null
@@ -100,6 +101,7 @@ export type Database = {
           id?: string
           is_full_season_drop?: boolean
           is_paused?: boolean
+          last_checked_at?: string | null
           platform: string
           poster_url?: string | null
           release_day?: string | null
@@ -119,6 +121,7 @@ export type Database = {
           id?: string
           is_full_season_drop?: boolean
           is_paused?: boolean
+          last_checked_at?: string | null
           platform?: string
           poster_url?: string | null
           release_day?: string | null
