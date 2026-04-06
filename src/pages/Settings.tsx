@@ -9,6 +9,7 @@ import { useCustomServices, CustomService } from '@/context/CustomServicesContex
 import FeedbackModal from '@/components/FeedbackModal';
 import ColorWheelModal from '@/components/ColorWheelModal';
 import { toast } from '@/hooks/use-toast';
+import CalendarFeedSection from '@/components/CalendarFeedSection';
 
 const BUILT_IN_SERVICES = [
   { key: 'netflix', label: 'Netflix', color: '#E50914' },
@@ -366,7 +367,10 @@ const Settings = () => {
 
       <Separator className="bg-border" />
 
-      {/* SECTION 3 — Feedback */}
+      {/* SECTION — Calendar Feed (signed-in only) */}
+      <CalendarFeedSection />
+
+      <Separator className="bg-border" />
       <section className="space-y-3">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground px-1">
           Feedback
