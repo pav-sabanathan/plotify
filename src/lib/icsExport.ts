@@ -54,7 +54,7 @@ export function generateICS(show: TrackedShow): string {
       `SUMMARY:${summary}`,
     );
     if (!spoilerFree) {
-      lines.push(`DESCRIPTION:All episodes of ${show.name} Season ${ep.season} available on ${platform}`);
+      lines.push(`DESCRIPTION:All episodes of ${show.name} Season ${ep.season} available on ${platform}. Data provided by TMDB (themoviedb.org)`);
     }
     lines.push('END:VEVENT');
   } else {
@@ -69,7 +69,7 @@ export function generateICS(show: TrackedShow): string {
         `SUMMARY:${summary}`,
       );
       if (!spoilerFree) {
-        lines.push(`DESCRIPTION:New episode of ${show.name} available on ${platform}`);
+        lines.push(`DESCRIPTION:New episode of ${show.name} available on ${platform}. Data provided by TMDB (themoviedb.org)`);
       }
       lines.push('END:VEVENT');
     }
