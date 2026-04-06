@@ -14,7 +14,224 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      custom_services: {
+        Row: {
+          colour: string
+          created_at: string
+          id: string
+          name: string
+          user_id: string
+        }
+        Insert: {
+          colour: string
+          created_at?: string
+          id?: string
+          name: string
+          user_id: string
+        }
+        Update: {
+          colour?: string
+          created_at?: string
+          id?: string
+          name?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_services_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shows: {
+        Row: {
+          created_at: string
+          current_episode: number | null
+          id: string
+          is_full_season_drop: boolean
+          is_paused: boolean
+          platform: string
+          poster_url: string | null
+          release_day: string | null
+          release_time: string | null
+          season: number | null
+          status: string
+          title: string
+          tmdb_id: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_episode?: number | null
+          id?: string
+          is_full_season_drop?: boolean
+          is_paused?: boolean
+          platform: string
+          poster_url?: string | null
+          release_day?: string | null
+          release_time?: string | null
+          season?: number | null
+          status: string
+          title: string
+          tmdb_id?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_episode?: number | null
+          id?: string
+          is_full_season_drop?: boolean
+          is_paused?: boolean
+          platform?: string
+          poster_url?: string | null
+          release_day?: string | null
+          release_time?: string | null
+          season?: number | null
+          status?: string
+          title?: string
+          tmdb_id?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shows_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_preferences: {
+        Row: {
+          created_at: string
+          id: string
+          region: string
+          show_past_episodes: boolean
+          spoiler_free_calendar: boolean
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          region?: string
+          show_past_episodes?: boolean
+          spoiler_free_calendar?: boolean
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          region?: string
+          show_past_episodes?: boolean
+          spoiler_free_calendar?: boolean
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      watch_progress: {
+        Row: {
+          episode: number
+          id: string
+          season: number
+          show_id: string
+          user_id: string
+          watched: boolean
+          watched_at: string | null
+        }
+        Insert: {
+          episode: number
+          id?: string
+          season: number
+          show_id: string
+          user_id: string
+          watched?: boolean
+          watched_at?: string | null
+        }
+        Update: {
+          episode?: number
+          id?: string
+          season?: number
+          show_id?: string
+          user_id?: string
+          watched?: boolean
+          watched_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "watch_progress_show_id_fkey"
+            columns: ["show_id"]
+            isOneToOne: false
+            referencedRelation: "shows"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "watch_progress_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      webcal_subscriptions: {
+        Row: {
+          created_at: string
+          id: string
+          token: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          token: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          token?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webcal_subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
