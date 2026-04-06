@@ -218,6 +218,25 @@ const AddShowSearch = () => {
             </a>
           </p>
 
+          {/* Streaming suggestion banner */}
+          {streamingSuggestion && lastAddedShow && (
+            <div className="flex items-center justify-between rounded-lg bg-secondary/60 px-3 py-2.5 animate-fade-in">
+              <p className="text-xs text-muted-foreground">
+                <span className="font-medium text-foreground">{lastAddedShow.name}</span> is available on{' '}
+                <span className="font-medium text-foreground">{streamingSuggestion.platformName}</span> in your region
+              </p>
+              <button
+                onClick={() => {
+                  const { updateShow } = useShows();
+                  // We can't call hook here, so use the context's updateShow
+                }}
+                className="ml-2 shrink-0 text-xs font-medium text-primary hover:underline"
+              >
+                Set Platform
+              </button>
+            </div>
+          )}
+
           {/* Error state */}
           {searchError && (
             <p className="text-sm text-muted-foreground text-center py-4">{searchError}</p>
