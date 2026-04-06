@@ -51,6 +51,8 @@ const Settings = () => {
   const [showColorWheel, setShowColorWheel] = useState(false);
   const [tooltipDismissed, setTooltipDismissed] = useState(() => localStorage.getItem(TOOLTIP_KEY) === 'true');
 
+  const { user } = useAuth();
+
   const [showPastEpisodes, setShowPastEpisodes] = useState(() =>
     localStorage.getItem(STORAGE_KEYS.showPastEpisodes) === 'true'
   );
@@ -58,14 +60,35 @@ const Settings = () => {
     localStorage.getItem(STORAGE_KEYS.spoilerFree) === 'true'
   );
 
+  // Load preferences from Supabase for authenticated users
+  useEffect(() => {
+    if (!user) return;
+    supabase.from('user_preferences').select('*').eq('user_id', user.id).single().then(({ data }) => {
+      if (data) {
+        setShowPastEpisodes(data.show_past_episodes);
+        setSpoilerFree(data.spoiler_free_calendar);
+      }
+    });
+  }, [user]);
+
+  const savePreference = useCallback(async (field: string, value: boolean) => {
+    if (!user) return;
+    await supabase.from('user_preferences').upsert({
+      user_id: user.id,
+      [field]: value,
+    }, { onConflict: 'user_id' });
+  }, [user]);
+
   const togglePastEpisodes = (checked: boolean) => {
     setShowPastEpisodes(checked);
     localStorage.setItem(STORAGE_KEYS.showPastEpisodes, String(checked));
+    savePreference('show_past_episodes', checked);
   };
 
   const toggleSpoilerFree = (checked: boolean) => {
     setSpoilerFree(checked);
     localStorage.setItem(STORAGE_KEYS.spoilerFree, String(checked));
+    savePreference('spoiler_free_calendar', checked);
   };
 
   const dismissTooltip = () => {
