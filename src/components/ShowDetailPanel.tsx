@@ -10,7 +10,7 @@ import { X, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { MOCK_SHOW_DATABASE } from '@/data/mockShowDatabase';
+
 import { trackEvent } from '@/lib/posthog';
 
 const isPlaceholder = (poster: string) => !poster || poster === '/placeholder.svg';
@@ -47,8 +47,6 @@ const ShowDetailPanel = () => {
 
   const totalSeasons = useMemo(() => {
     if (!show) return 1;
-    const mockEntry = MOCK_SHOW_DATABASE.find(m => m.id === show.id);
-    if (mockEntry) return mockEntry.season;
     return currentSeason;
   }, [show, currentSeason]);
 
@@ -60,8 +58,7 @@ const ShowDetailPanel = () => {
 
   const getEpisodeCount = useMemo(() => {
     if (!show) return () => 10;
-    const mockEntry = MOCK_SHOW_DATABASE.find(m => m.id === show.id);
-    const defaultCount = mockEntry?.episodesPerSeason ?? 10;
+    const defaultCount = 10;
     return (season: number) => {
       const stored = show.episodes.filter(ep => ep.season === season);
       if (stored.length > 0) return stored.length;
