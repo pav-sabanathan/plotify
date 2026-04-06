@@ -8,6 +8,7 @@ import { CustomServicesProvider } from "./context/CustomServicesContext";
 import { AuthProvider } from "./context/AuthContext";
 import AppHeader from "./components/AppHeader";
 import BottomNav from "./components/BottomNav";
+import GuestBanner from "./components/GuestBanner";
 import ShowDetailPanel from "./components/ShowDetailPanel";
 import AuthModal from "./components/AuthModal";
 import ProfileSetupModal from "./components/ProfileSetupModal";
