@@ -89,7 +89,7 @@ const LandingPage = () => {
       <section className="relative overflow-hidden">
         {/* Poster grid background */}
         <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
-          <div className="grid grid-cols-5 md:grid-cols-7 gap-2 md:gap-3 opacity-15 rotate-[-4deg] scale-110 pointer-events-none select-none">
+          <div className="grid grid-cols-5 md:grid-cols-7 gap-2 md:gap-3 opacity-40 rotate-[-4deg] scale-110 pointer-events-none select-none">
             {[...HERO_POSTERS, ...HERO_POSTERS].slice(0, 14).map((show, i) => (
               <img
                 key={`${show.title}-${i}`}
