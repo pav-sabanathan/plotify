@@ -1,16 +1,18 @@
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { useShows } from '@/context/ShowsContext';
 import { useCustomServices } from '@/context/CustomServicesContext';
-import { PLATFORM_LABELS, PLATFORM_COLORS, PLATFORM_BORDER_COLORS, Episode } from '@/types/show';
-import { isBuiltInPlatform, getPlatformColor, getPlatformLabel } from '@/lib/platformUtils';
+import { PLATFORM_COLORS, Episode } from '@/types/show';
+import { isBuiltInPlatform, getPlatformColor } from '@/lib/platformUtils';
 import PlatformBadge from './PlatformBadge';
 import StatusBadge from './StatusBadge';
 import FallbackPoster from './FallbackPoster';
-import { X, CheckCircle2 } from 'lucide-react';
+import { X, CheckCircle2, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useIsMobile } from '@/hooks/use-mobile';
-
+import { useTvMazeEpisodes } from '@/hooks/useTvMazeEpisodes';
+import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { trackEvent } from '@/lib/posthog';
 
 const isPlaceholder = (poster: string) => !poster || poster === '/placeholder.svg';
@@ -20,59 +22,63 @@ const getDisplayStatus = (show: any) => {
   return show.status;
 };
 
-function generateHistoricalEpisodes(seasonNum: number, count: number): Episode[] {
-  const baseDate = new Date(2020 + seasonNum, 0, 1);
-  return Array.from({ length: count }, (_, i) => ({
-    id: `s${seasonNum}e${i + 1}`,
-    season: seasonNum,
-    episode: i + 1,
-    title: `Episode ${i + 1}`,
-    airDate: format(baseDate, 'yyyy-MM-dd'),
-  }));
-}
-
 const ShowDetailPanel = () => {
-  const { shows, detailTarget, closeDetail, watchedEpisodes, toggleWatched, markAllWatched } = useShows();
+  const { shows, detailTarget, closeDetail, watchedEpisodes, toggleWatched } = useShows();
   const { services: customServices } = useCustomServices();
+  const { user } = useAuth();
   const isMobile = useIsMobile();
   const episodeRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const listRef = useRef<HTMLDivElement>(null);
 
   const show = detailTarget ? shows.find(s => s.id === detailTarget.showId) : null;
 
-  const currentSeason = useMemo(() => {
-    if (!show) return 1;
-    return Math.max(...show.episodes.map(ep => ep.season), 1);
-  }, [show]);
-
-  const totalSeasons = useMemo(() => {
-    if (!show) return 1;
-    return currentSeason;
-  }, [show, currentSeason]);
-
-  const [selectedSeason, setSelectedSeason] = useState(currentSeason);
-
+  // Get the stored season from Supabase
+  const [dbSeason, setDbSeason] = useState<number>(1);
   useEffect(() => {
-    setSelectedSeason(currentSeason);
-  }, [detailTarget?.showId, currentSeason]);
+    if (!show || !user) {
+      // For guests, derive from episodes or default to 1
+      if (show?.episodes.length) {
+        setDbSeason(Math.max(...show.episodes.map(ep => ep.season), 1));
+      } else {
+        setDbSeason(1);
+      }
+      return;
+    }
+    (async () => {
+      const { data } = await supabase
+        .from('shows')
+        .select('season')
+        .eq('id', show.id)
+        .eq('user_id', user.id)
+        .single();
+      setDbSeason(data?.season ?? 1);
+    })();
+  }, [show?.id, user]);
 
-  const getEpisodeCount = useMemo(() => {
-    if (!show) return () => 10;
-    const defaultCount = 10;
-    return (season: number) => {
-      const stored = show.episodes.filter(ep => ep.season === season);
-      if (stored.length > 0) return stored.length;
-      return defaultCount;
-    };
-  }, [show]);
+  const [selectedSeason, setSelectedSeason] = useState(1);
 
+  // Fetch episodes from TVMaze
+  const { episodes: tvMazeEpisodes, loading: tvMazeLoading, totalSeasons: tvMazeTotalSeasons } = useTvMazeEpisodes(
+    show?.name,
+    selectedSeason
+  );
+
+  // Use TVMaze episodes if available, otherwise fall back to stored episodes
   const seasonEpisodes = useMemo(() => {
+    if (tvMazeEpisodes.length > 0) return tvMazeEpisodes;
     if (!show) return [];
     const stored = show.episodes.filter(ep => ep.season === selectedSeason);
-    if (stored.length > 0) return stored;
-    const count = getEpisodeCount(selectedSeason);
-    return generateHistoricalEpisodes(selectedSeason, count);
-  }, [show, selectedSeason, getEpisodeCount]);
+    return stored;
+  }, [tvMazeEpisodes, show, selectedSeason]);
+
+  const totalSeasons = useMemo(() => {
+    return Math.max(tvMazeTotalSeasons, dbSeason);
+  }, [tvMazeTotalSeasons, dbSeason]);
+
+  // Set selected season to tracked season when opening
+  useEffect(() => {
+    setSelectedSeason(dbSeason);
+  }, [detailTarget?.showId, dbSeason]);
 
   useEffect(() => {
     if (detailTarget?.highlightEpisodeId) {
@@ -97,7 +103,7 @@ const ShowDetailPanel = () => {
   const watchedCount = watched.filter(id => seasonEpIds.includes(id)).length;
   const totalEps = seasonEpisodes.length;
   const progress = totalEps > 0 ? (watchedCount / totalEps) * 100 : 0;
-  const isHistoricalSeason = selectedSeason < currentSeason;
+  const isHistoricalSeason = selectedSeason < dbSeason;
 
   const builtIn = isBuiltInPlatform(show.platform);
   const bgClass = builtIn ? PLATFORM_COLORS[show.platform] : undefined;
@@ -105,7 +111,10 @@ const ShowDetailPanel = () => {
 
   const handleMarkAllSeason = () => {
     const airedIds = seasonEpisodes
-      .filter(ep => isHistoricalSeason || new Date(ep.airDate + 'T00:00:00') <= today)
+      .filter(ep => {
+        if (!ep.airDate) return false;
+        return isHistoricalSeason || new Date(ep.airDate + 'T00:00:00') <= today;
+      })
       .map(ep => ep.id);
     const unwatched = airedIds.filter(id => !watched.includes(id));
     unwatched.forEach(id => toggleWatched(show.id, id));
@@ -195,9 +204,15 @@ const ShowDetailPanel = () => {
             <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
               Season {selectedSeason} Episodes
             </h4>
-            {seasonEpisodes.map(ep => {
-              const airDate = new Date(ep.airDate + 'T00:00:00');
-              const aired = isHistoricalSeason || airDate <= today;
+            {tvMazeLoading && (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              </div>
+            )}
+            {!tvMazeLoading && seasonEpisodes.map(ep => {
+              const hasDate = !!ep.airDate;
+              const airDate = hasDate ? new Date(ep.airDate + 'T00:00:00') : null;
+              const aired = isHistoricalSeason || (airDate ? airDate <= today : false);
               const isWatched = watched.includes(ep.id);
               return (
                 <div
@@ -232,7 +247,7 @@ const ShowDetailPanel = () => {
                       E{ep.episode}{ep.title ? ` — ${ep.title}` : ''}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {format(airDate, 'MMM d, yyyy')}
+                      {hasDate && airDate ? format(airDate, 'MMM d, yyyy') : 'Date TBC'}
                     </p>
                   </div>
                   {!aired && (
@@ -241,6 +256,9 @@ const ShowDetailPanel = () => {
                 </div>
               );
             })}
+            {!tvMazeLoading && seasonEpisodes.length === 0 && (
+              <p className="text-sm text-muted-foreground text-center py-6">No episode data available</p>
+            )}
           </div>
         </div>
       </div>
