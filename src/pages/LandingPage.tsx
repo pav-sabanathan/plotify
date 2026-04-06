@@ -20,6 +20,26 @@ const HOW_IT_WORKS = [
   { icon: CheckCircle, heading: 'Track Your Progress', body: 'Mark episodes as watched and never lose your place again.' },
 ];
 
+// Curated popular shows with TMDb poster paths
+const HERO_POSTERS = [
+  { title: 'Stranger Things', path: '/AoftfHMYLmeMRYDraQANpI4sNOB.jpg' },
+  { title: 'The Bear', path: '/sHFlNpJl78UqSBkRSGEVafbfxJH.jpg' },
+  { title: 'House of the Dragon', path: '/t9XkeE7HzOsdQcDDDapDYh8Rrmt.jpg' },
+  { title: 'The Last of Us', path: '/uKvVjHNqB5VmOrdxqAt2F7J78ED.jpg' },
+  { title: 'Severance', path: '/pDq0kTMvQjSJcFPmwMwECflyzSv.jpg' },
+  { title: 'Shogun', path: '/7O4iVfOMQmdCSxhOg1WnzG1AgmT.jpg' },
+  { title: 'Fallout', path: '/AnsSKR9LuK0P5szFMOOgJqsNmn9.jpg' },
+  { title: 'Slow Horses', path: '/jXHMJk3sMbJMRCIm63bIWcZ5GCj.jpg' },
+  { title: 'The Penguin', path: '/aK07nhAPx9yfixhLQKixr3QERXV.jpg' },
+  { title: 'Arcane', path: '/fqldf2t8ztc9aiwn3k6mlX3tvRT.jpg' },
+  { title: 'Wednesday', path: '/9PFonBhy4cQy7Jz20NpMygczOkv.jpg' },
+  { title: 'Andor', path: '/59SVNwLfoMnZPPB6ukW6dlPxAdI.jpg' },
+  { title: 'Squid Game', path: '/dDlEmu3EZ0Pgg93K2SVNLCjCSvE.jpg' },
+  { title: 'Reacher', path: '/pBPxKV5AZ7xNOjqi1VPDh6LVab5.jpg' },
+];
+
+const TMDB_IMG = 'https://image.tmdb.org/t/p/w342';
+
 const LandingPage = () => {
   const navigate = useNavigate();
   const howRef = useRef<HTMLDivElement>(null);
@@ -66,27 +86,55 @@ const LandingPage = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* HERO */}
-      <section className="flex flex-col items-center text-center px-6 pt-16 pb-20 max-w-3xl mx-auto">
-        <img src={plotifyWordmark} alt="Plotify" className="w-48 md:w-64 mb-10" />
-        <h1 className="text-3xl md:text-5xl font-bold leading-tight mb-4">
-          Every episode. Every platform. One calendar.
-        </h1>
-        <p className="text-base md:text-lg text-muted-foreground max-w-xl mb-8 leading-relaxed">
-          Plotify tracks your favourite shows across Netflix, Disney+, Apple TV, Prime Video, and BBC iPlayer — so you never miss a drop.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-3">
-          <button
-            onClick={() => handleCTA('hero')}
-            className="rounded-xl px-8 py-3.5 text-sm font-semibold bg-gradient-to-r from-platform-prime to-platform-manual text-foreground hover:opacity-90 transition-opacity"
+      <section className="relative overflow-hidden">
+        {/* Poster grid background */}
+        <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
+          <div className="grid grid-cols-5 md:grid-cols-7 gap-2 md:gap-3 opacity-15 rotate-[-4deg] scale-110 pointer-events-none select-none">
+            {[...HERO_POSTERS, ...HERO_POSTERS].slice(0, 14).map((show, i) => (
+              <img
+                key={`${show.title}-${i}`}
+                src={`${TMDB_IMG}${show.path}`}
+                alt=""
+                loading={i < 7 ? 'eager' : 'lazy'}
+                className="w-20 md:w-28 rounded-lg object-cover aspect-[2/3]"
+              />
+            ))}
+          </div>
+          {/* Gradient overlay for readability */}
+          <div className="absolute inset-0 bg-gradient-to-b from-background via-background/80 to-background" />
+        </div>
+
+        {/* Hero content */}
+        <div className="relative z-10 flex flex-col items-center text-center px-6 pt-16 pb-20 max-w-3xl mx-auto">
+          <img src={plotifyWordmark} alt="Plotify" className="w-48 md:w-64 mb-10" />
+          <h1 className="text-3xl md:text-5xl font-bold leading-tight mb-4">
+            Every episode. Every platform. One calendar.
+          </h1>
+          <p className="text-base md:text-lg text-muted-foreground max-w-xl mb-8 leading-relaxed">
+            Plotify tracks your favourite shows across Netflix, Disney+, Apple TV, Prime Video, and BBC iPlayer — so you never miss a drop.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 mb-4">
+            <button
+              onClick={() => handleCTA('hero')}
+              className="rounded-xl px-8 py-3.5 text-sm font-semibold bg-gradient-to-r from-platform-prime to-platform-manual text-foreground hover:opacity-90 transition-opacity"
+            >
+              Try Plotify Free
+            </button>
+            <button
+              onClick={scrollToHow}
+              className="rounded-xl px-8 py-3.5 text-sm font-semibold border border-border text-foreground hover:bg-accent transition-colors"
+            >
+              See How It Works
+            </button>
+          </div>
+          <a
+            href="https://www.themoviedb.org"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors"
           >
-            Try Plotify Free
-          </button>
-          <button
-            onClick={scrollToHow}
-            className="rounded-xl px-8 py-3.5 text-sm font-semibold border border-border text-foreground hover:bg-accent transition-colors"
-          >
-            See How It Works
-          </button>
+            Poster data powered by TMDB
+          </a>
         </div>
       </section>
 
