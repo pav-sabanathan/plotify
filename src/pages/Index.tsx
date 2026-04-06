@@ -29,7 +29,6 @@ const Dashboard = () => {
   return (
     <div className={`px-4 max-w-4xl mx-auto ${isEmpty ? '' : 'space-y-6 pb-20'}`}>
       {user && <EmailVerificationBanner />}
-      <GuestBanner />
       {isEmpty ? (
         <>
           <EmptyDashboard />

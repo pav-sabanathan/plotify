@@ -37,6 +37,7 @@ const hasExistingShows = (): boolean => {
 
 const AppShell = ({ children }: { children: React.ReactNode }) => (
   <div className="min-h-screen bg-background">
+    <GuestBanner />
     <AppHeader />
     {children}
     <BottomNav />
