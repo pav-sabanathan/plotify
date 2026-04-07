@@ -1,17 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Tv, CalendarDays, CheckCircle } from 'lucide-react';
-import { PLATFORM_LABELS } from '@/types/show';
 import { trackEvent } from '@/lib/posthog';
+import { getPlatformLogo } from '@/lib/platformLogos';
 import plotifyWordmark from '@/assets/plotify-wordmark.png';
 import plotifyIcon from '@/assets/plotify-logo.png';
 
-const PLATFORMS: { key: string; label: string; colorClass: string }[] = [
-  { key: 'netflix', label: 'Netflix', colorClass: 'text-platform-netflix' },
-  { key: 'disney', label: 'Disney+', colorClass: 'text-platform-disney' },
-  { key: 'apple', label: 'Apple TV+', colorClass: 'text-platform-apple' },
-  { key: 'prime', label: 'Prime Video', colorClass: 'text-platform-prime' },
-  { key: 'bbc', label: 'BBC iPlayer', colorClass: 'text-platform-bbc' },
+const PLATFORMS = [
+  { key: 'netflix', label: 'Netflix' },
+  { key: 'disney', label: 'Disney+' },
+  { key: 'apple', label: 'Apple TV+' },
+  { key: 'prime', label: 'Prime Video' },
+  { key: 'bbc', label: 'BBC iPlayer' },
 ];
 
 const HOW_IT_WORKS = [
