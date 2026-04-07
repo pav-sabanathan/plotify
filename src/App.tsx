@@ -76,7 +76,7 @@ const App = () => {
                 {/* Landing page — skip if returning user */}
                 <Route
                   path="/"
-                  element={hasExistingShows() ? <Navigate to="/home" replace /> : <LandingPage />}
+                  element={<RootRoute />}
                 />
                 {/* App routes */}
                 <Route path="/home" element={<AppShell><Index /></AppShell>} />
