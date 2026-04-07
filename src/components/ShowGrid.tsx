@@ -98,19 +98,17 @@ const ShowGrid = () => {
                 <StatusBadge status={getDisplayStatus(show)} />
               </div>
 
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="h-1 bg-secondary rounded-full overflow-hidden cursor-pointer">
-                    <div
-                      className={cn('h-full rounded-full transition-all duration-500', bgClass)}
-                      style={customColor ? { backgroundColor: customColor, width: `${progress}%` } : { width: `${progress}%` }}
-                    />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {totalEps > 0 ? `${watchedCount} of ${totalEps} episodes watched` : `${watchedCount} episodes watched`}
-                </TooltipContent>
-              </Tooltip>
+              <div className="space-y-1">
+                <span className="text-[10px] text-muted-foreground">
+                  {watchedCount} watched · Season {show.episodes[0]?.season ?? 1}
+                </span>
+                <div className="h-1 bg-secondary rounded-full overflow-hidden">
+                  <div
+                    className={cn('h-full rounded-full transition-all duration-500', bgClass)}
+                    style={customColor ? { backgroundColor: customColor, width: `${progress}%` } : { width: `${progress}%` }}
+                  />
+                </div>
+              </div>
 
               <div className="flex items-center gap-1.5 pt-1">
                 <button
