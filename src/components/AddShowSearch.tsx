@@ -146,33 +146,42 @@ const AddShowSearch = () => {
       return;
     }
 
-    // Fetch TVMaze schedule data
-    const schedule = await fetchTvMazeSchedule(result.name);
+    // Fetch schedule, TMDb status, streaming availability in parallel
+    const [schedule, tmdbDetails, suggestion] = await Promise.all([
+      fetchTvMazeSchedule(result.name),
+      fetchTmdbStatus(result.id),
+      fetchStreamingAvailability(result.id).catch(() => null),
+    ]);
 
     const id = `tmdb-${result.id}-${Date.now()}`;
     const posterUrl = result.poster_path ? `${TMDB_IMG_BASE}/w500${result.poster_path}` : '/placeholder.svg';
 
-    // Fetch streaming availability and auto-set platform
     let platform: string = 'manual';
     let platformName: string | null = null;
-    const suggestion = await fetchStreamingAvailability(result.id).catch(() => null);
     if (suggestion) {
       platform = suggestion.platformKey;
       platformName = suggestion.platformName;
       ensurePlatformExists(suggestion.platformKey, suggestion.platformName);
     }
 
+    const showStatus = mapTmdbStatus(tmdbDetails.status);
+    const latestSeason = tmdbDetails.seasons;
+
+    // Fetch episode count for the latest season from TVMaze
+    const totalEps = await fetchTvMazeEpisodeCount(result.name, latestSeason);
+
     const tracked: TrackedShow = {
       id,
       name: result.name,
       poster: posterUrl,
       platform: platform as Platform,
-      status: 'ongoing',
+      status: showStatus,
       releaseType: 'weekly',
       paused: false,
       releaseDay: schedule.day ?? 1,
       releaseTime: schedule.time || '20:00',
       episodes: [],
+      totalEpisodes: totalEps || undefined,
     };
 
     addShow(tracked);
