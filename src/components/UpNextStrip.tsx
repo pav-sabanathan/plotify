@@ -1,13 +1,14 @@
 import { useMemo, useRef, useState, useEffect } from 'react';
 import { useShows } from '@/context/ShowsContext';
 import { useCustomServices } from '@/context/CustomServicesContext';
-import { differenceInDays, isAfter, isToday, parseISO } from 'date-fns';
+import { differenceInDays, isToday, parseISO, addDays, isBefore } from 'date-fns';
 import { PLATFORM_BORDER_COLORS } from '@/types/show';
 import { isBuiltInPlatform, getPlatformColor } from '@/lib/platformUtils';
 import PlatformBadge from './PlatformBadge';
 import FallbackPoster from './FallbackPoster';
 import { cn } from '@/lib/utils';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { searchTvMazeShow, fetchAllEpisodes } from '@/hooks/useTvMazeEpisodes';
 
 const isPlaceholder = (poster: string) => !poster || poster === '/placeholder.svg';
 
@@ -24,33 +25,108 @@ interface UpcomingEpisode {
   totalEpisodes: number;
 }
 
+interface TvMazeCache {
+  [showName: string]: { season: number; episode: number; airDate: string; title?: string }[];
+}
+
 const UpNextStrip = () => {
   const { shows } = useShows();
   const { services: customServices } = useCustomServices();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+  const [tvMazeData, setTvMazeData] = useState<TvMazeCache>({});
+
+  const activeShows = useMemo(() => shows.filter(s => !s.paused), [shows]);
+
+  // Fetch TVMaze episodes — same logic as CalendarView
+  useEffect(() => {
+    if (activeShows.length === 0) return;
+
+    let cancelled = false;
+    const fetchAll = async () => {
+      const cache: TvMazeCache = {};
+
+      for (const show of activeShows) {
+        if (cancelled) return;
+        if (tvMazeData[show.name]) {
+          cache[show.name] = tvMazeData[show.name];
+          continue;
+        }
+        try {
+          const tvMazeId = await searchTvMazeShow(show.name);
+          if (cancelled) return;
+          if (!tvMazeId) continue;
+          const allEps = await fetchAllEpisodes(tvMazeId);
+          if (cancelled) return;
+          cache[show.name] = allEps
+            .filter(ep => ep.airdate)
+            .map(ep => ({
+              season: ep.season,
+              episode: ep.number,
+              airDate: ep.airdate,
+              title: ep.name || undefined,
+            }));
+        } catch {
+          // skip
+        }
+      }
+
+      if (!cancelled) {
+        setTvMazeData(prev => ({ ...prev, ...cache }));
+      }
+    };
+
+    fetchAll();
+    return () => { cancelled = true; };
+  }, [activeShows.map(s => s.id).join(',')]);
 
   const upcoming = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    const cutoff = addDays(today, 30);
     const items: UpcomingEpisode[] = [];
 
-    shows.filter(s => !s.paused).forEach(show => {
+    activeShows.forEach(show => {
+      // Use TVMaze data if available, fall back to stored episodes
+      const tvEps = tvMazeData[show.name];
+      const episodes = tvEps
+        ? tvEps.map(ep => ({
+            id: `s${ep.season}e${ep.episode}`,
+            season: ep.season,
+            episode: ep.episode,
+            title: ep.title,
+            airDate: ep.airDate,
+          }))
+        : show.episodes;
+
       if (show.releaseType === 'full-season') {
-        const firstEp = show.episodes[0];
-        if (firstEp && !isAfter(today, parseISO(firstEp.airDate))) {
-          items.push({
-            showId: show.id, showName: show.name, poster: show.poster,
-            platform: show.platform, season: firstEp.season, episode: firstEp.episode,
-            airDate: firstEp.airDate, isFullSeason: true, totalEpisodes: show.episodes.length,
-          });
-        }
+        // Group by season — find earliest episode per season within window
+        const seasonMap = new Map<number, typeof episodes[0]>();
+        episodes.forEach(ep => {
+          if (!ep.airDate) return;
+          if (!seasonMap.has(ep.season) || ep.airDate < seasonMap.get(ep.season)!.airDate) {
+            seasonMap.set(ep.season, ep);
+          }
+        });
+        seasonMap.forEach((ep) => {
+          const epDate = parseISO(ep.airDate);
+          if (epDate >= today && isBefore(epDate, cutoff)) {
+            items.push({
+              showId: show.id, showName: show.name, poster: show.poster,
+              platform: show.platform, season: ep.season, episode: ep.episode,
+              airDate: ep.airDate, isFullSeason: true,
+              totalEpisodes: episodes.filter(e => e.season === ep.season).length,
+            });
+          }
+        });
       } else {
-        const nextEp = show.episodes.find(ep => {
+        // Weekly: find next upcoming episode within 30 days
+        const nextEp = episodes.find(ep => {
+          if (!ep.airDate) return false;
           const epDate = parseISO(ep.airDate);
           epDate.setHours(0, 0, 0, 0);
-          return epDate >= today;
+          return epDate >= today && isBefore(epDate, cutoff);
         });
         if (nextEp) {
           items.push({
@@ -65,7 +141,7 @@ const UpNextStrip = () => {
     return items
       .sort((a, b) => parseISO(a.airDate).getTime() - parseISO(b.airDate).getTime())
       .slice(0, 5);
-  }, [shows]);
+  }, [activeShows, tvMazeData]);
 
   const checkScroll = () => {
     const el = scrollRef.current;
