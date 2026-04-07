@@ -143,6 +143,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(s?.user ?? null);
       if (s?.user) {
         fetchProfile(s.user.id).catch((e) => console.error('fetchProfile unhandled:', e));
+        // Delay webcal token creation to let DB trigger commit
+        setTimeout(() => {
+          ensureWebcalToken(s.user.id).catch((e) => console.error('ensureWebcalToken unhandled:', e));
+        }, 2000);
       }
       setLoading(false);
     });
