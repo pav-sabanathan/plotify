@@ -39,17 +39,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [needsProfileSetup, setNeedsProfileSetup] = useState(false);
 
   const fetchProfile = useCallback(async (userId: string) => {
-    const { data } = await supabase
-      .from('profiles')
-      .select('display_name, avatar_url')
-      .eq('user_id', userId)
-      .single();
-    if (data) {
-      setProfile(data);
-      // If no display_name, user needs profile setup
-      if (!data.display_name) {
+    try {
+      const { data } = await supabase
+        .from('profiles')
+        .select('display_name, avatar_url')
+        .eq('user_id', userId)
+        .single();
+      if (data) {
+        setProfile(data);
+        if (!data.display_name) {
+          setNeedsProfileSetup(true);
+        }
+      } else {
+        // New user with no profile row yet
         setNeedsProfileSetup(true);
       }
+    } catch (e) {
+      console.error('Failed to fetch profile:', e);
+      setNeedsProfileSetup(true);
     }
   }, []);
 
