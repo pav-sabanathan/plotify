@@ -170,6 +170,9 @@ const AddShowSearch = () => {
     // Fetch episode count for the latest season from TVMaze
     const totalEps = await fetchTvMazeEpisodeCount(result.name, latestSeason);
 
+    // Build a dummy episode so showToDbRow picks up the correct season
+    const seasonEpisode = { id: `s${latestSeason}e1`, season: latestSeason, episode: 1, airDate: '' };
+
     const tracked: TrackedShow = {
       id,
       name: result.name,
@@ -180,7 +183,7 @@ const AddShowSearch = () => {
       paused: false,
       releaseDay: schedule.day ?? 1,
       releaseTime: schedule.time || '20:00',
-      episodes: [],
+      episodes: [seasonEpisode],
       totalEpisodes: totalEps || undefined,
     };
 
