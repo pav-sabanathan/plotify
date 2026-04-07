@@ -248,7 +248,7 @@ export const ShowsProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (isGuest || !user) return;
 
     const showsSub = supabase
-      .channel('shows-realtime')
+      .channel(`user-${user.id}-shows`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'shows', filter: `user_id=eq.${user.id}` }, async () => {
         const { data } = await supabase.from('shows').select('*').eq('user_id', user.id);
         if (data) setShows(data.map(dbRowToShow));
@@ -256,7 +256,7 @@ export const ShowsProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       .subscribe();
 
     const watchSub = supabase
-      .channel('watch-progress-realtime')
+      .channel(`user-${user.id}-watch-progress`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'watch_progress', filter: `user_id=eq.${user.id}` }, async () => {
         const { data } = await supabase.from('watch_progress').select('*').eq('user_id', user.id);
         if (data) setWatchedEpisodes(dbWatchedToMap(data));
