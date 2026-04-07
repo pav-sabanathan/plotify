@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -7,6 +8,8 @@ import { Eye, EyeOff } from 'lucide-react';
 
 const AuthModal = () => {
   const { showAuthModal, setShowAuthModal, authModalView, setAuthModalView, signIn, signUp, signInWithGoogle, resetPassword } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -63,6 +66,10 @@ const AuthModal = () => {
       setError(result.error);
     } else {
       handleClose();
+      // If signed in from landing page, go to home
+      if (location.pathname === '/') {
+        navigate('/home', { replace: true });
+      }
     }
   };
 

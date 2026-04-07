@@ -23,6 +23,7 @@ import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import LandingPage from "./pages/LandingPage";
 import { useEffect } from "react";
+import { useAuth } from "./context/AuthContext";
 import { initPostHog } from "./lib/posthog";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,15 @@ const hasExistingShows = (): boolean => {
     const parsed = JSON.parse(stored);
     return Array.isArray(parsed) && parsed.length > 0;
   } catch { return false; }
+};
+
+const RootRoute = () => {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (user || hasExistingShows()) {
+    return <Navigate to="/home" replace />;
+  }
+  return <LandingPage />;
 };
 
 const AppShell = ({ children }: { children: React.ReactNode }) => (
@@ -66,7 +76,7 @@ const App = () => {
                 {/* Landing page — skip if returning user */}
                 <Route
                   path="/"
-                  element={hasExistingShows() ? <Navigate to="/home" replace /> : <LandingPage />}
+                  element={<RootRoute />}
                 />
                 {/* App routes */}
                 <Route path="/home" element={<AppShell><Index /></AppShell>} />
