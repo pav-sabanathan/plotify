@@ -9,7 +9,7 @@ import plotifyIcon from '@/assets/plotify-logo.png';
 const PLATFORMS: { key: string; label: string; colorClass: string }[] = [
   { key: 'netflix', label: 'Netflix', colorClass: 'text-platform-netflix' },
   { key: 'disney', label: 'Disney+', colorClass: 'text-platform-disney' },
-  { key: 'apple', label: 'Apple TV', colorClass: 'text-platform-apple' },
+  { key: 'apple', label: 'Apple TV+', colorClass: 'text-platform-apple' },
   { key: 'prime', label: 'Prime Video', colorClass: 'text-platform-prime' },
   { key: 'bbc', label: 'BBC iPlayer', colorClass: 'text-platform-bbc' },
 ];
@@ -128,7 +128,7 @@ const LandingPage = () => {
             Every episode. Every platform. One calendar.
           </h1>
           <p className="text-base md:text-lg text-muted-foreground max-w-xl mb-8 leading-relaxed">
-            Plotify tracks your favourite shows across Netflix, Disney+, Apple TV, Prime Video, and BBC iPlayer — so you never miss a drop.
+            Plotify tracks your favourite shows across Netflix, Disney+, Apple TV+, Prime Video, and BBC iPlayer — so you never miss a drop.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 mb-4">
             <button

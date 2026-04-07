@@ -15,7 +15,7 @@ import ProfileSection from '@/components/ProfileSection';
 const BUILT_IN_SERVICES = [
   { key: 'netflix', label: 'Netflix', color: '#E50914' },
   { key: 'disney', label: 'Disney+', color: '#113CCF' },
-  { key: 'apple', label: 'Apple TV', color: '#A0A0A0' },
+  { key: 'apple', label: 'Apple TV+', color: '#A0A0A0' },
   { key: 'prime', label: 'Prime Video', color: '#00A8E1' },
   { key: 'bbc', label: 'BBC iPlayer', color: '#FF6B00' },
 ];

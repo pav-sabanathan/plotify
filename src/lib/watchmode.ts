@@ -37,7 +37,7 @@ const SUGGESTED_MAP: Record<string, { key: string; name: string }> = {
 const PLATFORM_DISPLAY: Record<string, string> = {
   'netflix': 'Netflix',
   'disney': 'Disney+',
-  'apple': 'Apple TV',
+  'apple': 'Apple TV+',
   'prime': 'Prime Video',
   'bbc': 'BBC iPlayer',
 };
