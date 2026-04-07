@@ -39,6 +39,15 @@ const hasExistingShows = (): boolean => {
   } catch { return false; }
 };
 
+const RootRoute = () => {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (user || hasExistingShows()) {
+    return <Navigate to="/home" replace />;
+  }
+  return <LandingPage />;
+};
+
 const AppShell = ({ children }: { children: React.ReactNode }) => (
   <div className="min-h-screen bg-background">
     <OfflineBanner />
