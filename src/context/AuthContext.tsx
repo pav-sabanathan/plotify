@@ -40,39 +40,64 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchProfile = useCallback(async (userId: string) => {
     try {
-      const { data } = await supabase
+      // Use maybeSingle() to avoid PGRST116 error when no row exists
+      const { data, error } = await supabase
         .from('profiles')
         .select('display_name, avatar_url')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
+
+      if (error) {
+        console.error('fetchProfile query error:', error);
+        setProfile({ display_name: null, avatar_url: null });
+        setNeedsProfileSetup(true);
+        return;
+      }
+
       if (data) {
-        setProfile(data);
+        setProfile({ display_name: data.display_name ?? null, avatar_url: data.avatar_url ?? null });
         if (!data.display_name) {
           setNeedsProfileSetup(true);
         }
       } else {
-        // New user with no profile row yet
+        // No profile row exists — create one for this user
+        setProfile({ display_name: null, avatar_url: null });
         setNeedsProfileSetup(true);
+        try {
+          await supabase.from('profiles').insert({ user_id: userId });
+        } catch (insertErr) {
+          console.error('Failed to create profile row:', insertErr);
+        }
       }
     } catch (e) {
       console.error('Failed to fetch profile:', e);
+      setProfile({ display_name: null, avatar_url: null });
       setNeedsProfileSetup(true);
     }
   }, []);
 
   const ensureWebcalToken = useCallback(async (userId: string) => {
     try {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('webcal_subscriptions')
         .select('id')
         .eq('user_id', userId)
         .limit(1);
+
+      if (error) {
+        console.error('ensureWebcalToken select error:', error);
+        return;
+      }
+
       if (!data || data.length === 0) {
         const token = crypto.randomUUID();
-        await supabase.from('webcal_subscriptions').insert({
+        const { error: insertError } = await supabase.from('webcal_subscriptions').insert({
           user_id: userId,
           token,
         });
+        if (insertError) {
+          console.error('ensureWebcalToken insert error:', insertError);
+        }
       }
     } catch (e) {
       console.error('Failed to ensure webcal token:', e);
@@ -82,19 +107,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // Set up auth state listener BEFORE getting session
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, currentSession) => {
+      (_event, currentSession) => {
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         if (currentSession?.user) {
           // Use setTimeout to avoid Supabase client deadlock
+          const userId = currentSession.user.id;
           setTimeout(() => {
-            fetchProfile(currentSession.user.id);
-            ensureWebcalToken(currentSession.user.id);
+            fetchProfile(userId).catch((e) => console.error('fetchProfile unhandled:', e));
+            ensureWebcalToken(userId).catch((e) => console.error('ensureWebcalToken unhandled:', e));
           }, 0);
         } else {
           setProfile(null);
         }
-        if (event === 'SIGNED_OUT') {
+        if (_event === 'SIGNED_OUT') {
           setProfile(null);
           setNeedsProfileSetup(false);
         }
@@ -105,13 +131,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSession(s);
       setUser(s?.user ?? null);
       if (s?.user) {
-        fetchProfile(s.user.id);
+        fetchProfile(s.user.id).catch((e) => console.error('fetchProfile unhandled:', e));
       }
       setLoading(false);
     });
 
     return () => subscription.unsubscribe();
-  }, [fetchProfile]);
+  }, [fetchProfile, ensureWebcalToken]);
 
   const signUp = useCallback(async (email: string, password: string) => {
     const { error } = await supabase.auth.signUp({
@@ -143,7 +169,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const signInWithGoogle = useCallback(async () => {
-    // After OAuth, return to current page — unless on landing page, then go to /home
     const currentPath = window.location.pathname;
     const redirectTo = currentPath === '/'
       ? `${window.location.origin}/home`
@@ -180,12 +205,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateProfile = useCallback(async (updates: Partial<Profile>) => {
     if (!user) return { error: 'Not signed in.' };
+    // Use upsert to handle case where profile row doesn't exist yet
     const { error } = await supabase
       .from('profiles')
-      .update(updates)
-      .eq('user_id', user.id);
+      .upsert({ user_id: user.id, ...updates }, { onConflict: 'user_id' });
     if (error) return { error: error.message };
-    setProfile(prev => prev ? { ...prev, ...updates } : updates as Profile);
+    setProfile(prev => {
+      const base = prev ?? { display_name: null, avatar_url: null };
+      return { ...base, ...updates };
+    });
     setNeedsProfileSetup(false);
     return { error: null };
   }, [user]);

@@ -7,7 +7,6 @@ import EmptyDashboard from '@/components/EmptyDashboard';
 import OnboardingModal from '@/components/OnboardingModal';
 import AppFooter from '@/components/AppFooter';
 import ErrorBoundary from '@/components/ErrorBoundary';
-
 import EmailVerificationBanner from '@/components/EmailVerificationBanner';
 import { trackEvent } from '@/lib/posthog';
 
@@ -33,29 +32,33 @@ const Dashboard = () => {
     );
   }
 
-  const isEmpty = shows.length === 0;
+  const isEmpty = !shows || shows.length === 0;
 
   return (
-    <ErrorBoundary fallback={<EmptyDashboard />}>
-      <div className={`px-4 max-w-4xl mx-auto ${isEmpty ? '' : 'space-y-6 pb-20'}`}>
+    <div className={`px-4 max-w-4xl mx-auto ${isEmpty ? '' : 'space-y-6 pb-20'}`}>
+      <ErrorBoundary fallback={null}>
         {user && <EmailVerificationBanner />}
-        {isEmpty ? (
-          <>
-            <EmptyDashboard />
-            <div className="hidden md:block">
-              <AppFooter />
-            </div>
-          </>
-        ) : (
-          <>
-            <UpNextStrip />
-            <CalendarView />
+      </ErrorBoundary>
+      {isEmpty ? (
+        <>
+          <EmptyDashboard />
+          <div className="hidden md:block">
             <AppFooter />
-          </>
-        )}
-        {showOnboarding && <OnboardingModal onDismiss={dismissOnboarding} />}
-      </div>
-    </ErrorBoundary>
+          </div>
+        </>
+      ) : (
+        <>
+          <ErrorBoundary fallback={<div className="px-4 py-8 text-center text-muted-foreground">Unable to load upcoming episodes.</div>}>
+            <UpNextStrip />
+          </ErrorBoundary>
+          <ErrorBoundary fallback={<div className="px-4 py-8 text-center text-muted-foreground">Unable to load calendar.</div>}>
+            <CalendarView />
+          </ErrorBoundary>
+          <AppFooter />
+        </>
+      )}
+      {showOnboarding && <OnboardingModal onDismiss={dismissOnboarding} />}
+    </div>
   );
 };
 
