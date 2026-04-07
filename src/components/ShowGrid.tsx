@@ -60,7 +60,7 @@ const ShowGrid = () => {
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
       {sorted.map((show, i) => {
         const watched = watchedEpisodes[show.id] || [];
-        const totalEps = show.episodes.length;
+        const totalEps = show.totalEpisodes || show.episodes.length;
         const watchedCount = watched.length;
         const progress = totalEps > 0 ? (watchedCount / totalEps) * 100 : 0;
         const builtIn = isBuiltInPlatform(show.platform);

@@ -36,6 +36,38 @@ async function searchTmdb(query: string): Promise<TmdbResult[]> {
   return (data.results as TmdbResult[]).slice(0, 8);
 }
 
+async function fetchTmdbStatus(tmdbId: number): Promise<{ status: string; seasons: number }> {
+  try {
+    const res = await fetch(`https://api.themoviedb.org/3/tv/${tmdbId}`, {
+      headers: { Authorization: `Bearer ${TMDB_TOKEN}` },
+    });
+    if (!res.ok) return { status: 'Returning Series', seasons: 1 };
+    const data = await res.json();
+    return { status: data.status || 'Returning Series', seasons: data.number_of_seasons || 1 };
+  } catch {
+    return { status: 'Returning Series', seasons: 1 };
+  }
+}
+
+function mapTmdbStatus(tmdbStatus: string): 'ongoing' | 'ended' {
+  const ended = ['Ended', 'Canceled', 'Cancelled'];
+  return ended.some(s => tmdbStatus.toLowerCase() === s.toLowerCase()) ? 'ended' : 'ongoing';
+}
+
+async function fetchTvMazeEpisodeCount(showName: string, season: number): Promise<number> {
+  try {
+    const searchRes = await fetch(`https://api.tvmaze.com/singlesearch/shows?q=${encodeURIComponent(showName)}`);
+    if (!searchRes.ok) return 0;
+    const show = await searchRes.json();
+    const epsRes = await fetch(`https://api.tvmaze.com/shows/${show.id}/episodes`);
+    if (!epsRes.ok) return 0;
+    const eps = await epsRes.json();
+    return eps.filter((e: any) => e.season === season).length;
+  } catch {
+    return 0;
+  }
+}
+
 async function fetchTvMazeSchedule(title: string): Promise<{ day?: number; time?: string }> {
   try {
     const res = await fetch(`https://api.tvmaze.com/search/shows?q=${encodeURIComponent(title)}`);
