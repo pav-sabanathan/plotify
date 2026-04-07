@@ -44,10 +44,11 @@ const ImportDataWrapper = () => {
 
   if (!showImport) return null;
 
-  return <ImportDataModal onDone={() => {
+  return <ImportDataModal onDone={(didImport?: boolean) => {
     setShowImport(false);
-    // Force reload to pick up imported data
-    window.location.reload();
+    if (didImport) {
+      window.location.reload();
+    }
   }} />;
 };
 
