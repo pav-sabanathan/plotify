@@ -107,7 +107,24 @@ const AuthModal = () => {
     <Dialog open={showAuthModal} onOpenChange={(open) => { if (!open) handleClose(); }}>
       <DialogContent className="sm:max-w-[400px] bg-card border-border p-0 max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain">
         <div className="p-6">
-        {forgotMode ? (
+        {signUpSuccess ? (
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold text-foreground">Check your email</h2>
+            <p className="text-sm text-muted-foreground">
+              We've sent a verification link to <span className="font-medium text-foreground">{signUpEmail}</span>. Click it to activate your account.
+            </p>
+            {error && <p className="text-sm text-destructive">{error}</p>}
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full border-border"
+              disabled={resending}
+              onClick={handleResendFromModal}
+            >
+              {resending ? 'Sending…' : 'Resend email'}
+            </Button>
+          </div>
+        ) : forgotMode ? (
           <form onSubmit={handleSubmit} className="space-y-4">
             <h2 className="text-xl font-semibold text-foreground">Reset password</h2>
             {resetSent ? (
