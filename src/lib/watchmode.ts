@@ -8,52 +8,72 @@ interface WatchmodeSource {
   web_url: string;
 }
 
+// Canonical name aliases → Plotify built-in key
 const PLATFORM_MAP: Record<string, string> = {
-  'Netflix': 'netflix',
-  'Disney+': 'disney',
-  'Disney Plus': 'disney',
-  'Apple TV+': 'apple',
-  'Apple TV Plus': 'apple',
-  'Amazon Prime Video': 'prime',
-  'Prime Video': 'prime',
-  'BBC iPlayer': 'bbc',
-  'Crave': 'suggested-crave',
-  'Paramount+': 'suggested-paramount',
-  'Paramount Plus': 'suggested-paramount',
-  'HBO Max': 'suggested-max',
-  'Max': 'suggested-max',
-  'Crunchyroll': 'suggested-crunchyroll',
-  'Peacock': 'suggested-peacock',
-  'Peacock Premium': 'suggested-peacock',
-  'BritBox': 'suggested-britbox',
+  'netflix': 'netflix',
+  'disney+': 'disney',
+  'disney plus': 'disney',
+  'apple tv+': 'apple',
+  'apple tv plus': 'apple',
+  'apple tv': 'apple',
+  'amazon prime video': 'prime',
+  'prime video': 'prime',
+  'bbc iplayer': 'bbc',
+};
+
+// Aliases for suggested / custom platforms
+const SUGGESTED_MAP: Record<string, { key: string; name: string }> = {
+  'crave': { key: 'crave', name: 'Crave' },
+  'paramount+': { key: 'paramount-plus', name: 'Paramount+' },
+  'paramount plus': { key: 'paramount-plus', name: 'Paramount+' },
+  'hbo max': { key: 'max', name: 'Max' },
+  'max': { key: 'max', name: 'Max' },
+  'crunchyroll': { key: 'crunchyroll', name: 'Crunchyroll' },
+  'peacock': { key: 'peacock', name: 'Peacock' },
+  'peacock premium': { key: 'peacock', name: 'Peacock' },
+  'britbox': { key: 'britbox', name: 'BritBox' },
 };
 
 const PLATFORM_DISPLAY: Record<string, string> = {
   'netflix': 'Netflix',
   'disney': 'Disney+',
-  'apple': 'Apple TV+',
+  'apple': 'Apple TV',
   'prime': 'Prime Video',
   'bbc': 'BBC iPlayer',
-  'suggested-crave': 'Crave',
-  'suggested-paramount': 'Paramount+',
-  'suggested-max': 'Max',
-  'suggested-crunchyroll': 'Crunchyroll',
-  'suggested-peacock': 'Peacock',
-  'suggested-britbox': 'BritBox',
 };
 
 export const PLATFORM_DEFAULT_COLORS: Record<string, string> = {
-  'suggested-crave': '#0057FF',
-  'suggested-paramount': '#0064FF',
-  'suggested-max': '#5822B4',
-  'suggested-crunchyroll': '#F47521',
-  'suggested-peacock': '#F5C400',
-  'suggested-britbox': '#00A8A8',
+  'crave': '#0057FF',
+  'paramount-plus': '#0064FF',
+  'max': '#5822B4',
+  'crunchyroll': '#F47521',
+  'peacock': '#F5C400',
+  'britbox': '#00A8A8',
 };
 
 export interface StreamingSuggestion {
   platformKey: string;
   platformName: string;
+}
+
+function resolveplatform(sourceName: string): StreamingSuggestion | null {
+  const lower = sourceName.toLowerCase().trim();
+
+  // Check built-in platforms first
+  const builtInKey = PLATFORM_MAP[lower];
+  if (builtInKey) {
+    return { platformKey: builtInKey, platformName: PLATFORM_DISPLAY[builtInKey] || sourceName };
+  }
+
+  // Check suggested/custom platforms
+  const suggested = SUGGESTED_MAP[lower];
+  if (suggested) {
+    return { platformKey: suggested.key, platformName: suggested.name };
+  }
+
+  // No match — return the raw name as a custom platform key
+  const customKey = lower.replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  return { platformKey: customKey, platformName: sourceName };
 }
 
 export async function fetchStreamingAvailability(
@@ -69,16 +89,12 @@ export async function fetchStreamingAvailability(
     const sources: WatchmodeSource[] = await res.json();
     if (!Array.isArray(sources) || sources.length === 0) return null;
 
-    // Find the first subscription-type source that maps to a known platform
-    const sub = sources.find(s => s.type === 'sub' && PLATFORM_MAP[s.name]);
-    const match = sub || sources.find(s => PLATFORM_MAP[s.name]);
+    // Prefer subscription-type sources
+    const sub = sources.find(s => s.type === 'sub');
+    const match = sub || sources[0];
     if (!match) return null;
 
-    const platformKey = PLATFORM_MAP[match.name];
-    return {
-      platformKey,
-      platformName: PLATFORM_DISPLAY[platformKey] || match.name,
-    };
+    return resolveplatform(match.name);
   } catch {
     return null;
   }
