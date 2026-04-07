@@ -83,7 +83,8 @@ const AuthModal = () => {
 
   return (
     <Dialog open={showAuthModal} onOpenChange={(open) => { if (!open) handleClose(); }}>
-      <DialogContent className="sm:max-w-[400px] bg-card border-border p-6">
+      <DialogContent className="sm:max-w-[400px] bg-card border-border p-0 max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain">
+        <div className="p-6">
         {forgotMode ? (
           <form onSubmit={handleSubmit} className="space-y-4">
             <h2 className="text-xl font-semibold text-foreground">Reset password</h2>
@@ -198,6 +199,7 @@ const AuthModal = () => {
             </Button>
           </form>
         )}
+        </div>
       </DialogContent>
     </Dialog>
   );
