@@ -10,6 +10,7 @@ import FeedbackModal from '@/components/FeedbackModal';
 import ColorWheelModal from '@/components/ColorWheelModal';
 import { toast } from '@/hooks/use-toast';
 import CalendarFeedSection from '@/components/CalendarFeedSection';
+import ProfileSection from '@/components/ProfileSection';
 
 const BUILT_IN_SERVICES = [
   { key: 'netflix', label: 'Netflix', color: '#E50914' },
