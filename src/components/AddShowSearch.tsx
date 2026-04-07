@@ -100,9 +100,13 @@ const AddShowSearch = () => {
     doSearch(val);
   };
 
-  // Watchmode streaming suggestion state
-  const [streamingSuggestion, setStreamingSuggestion] = useState<StreamingSuggestion | null>(null);
-  const [lastAddedShow, setLastAddedShow] = useState<{ id: string; name: string } | null>(null);
+  // Ensure a platform exists in custom services if it's not built-in
+  const ensurePlatformExists = useCallback((platformKey: string, platformName: string) => {
+    if (isBuiltInPlatform(platformKey)) return;
+    if (hasService(platformKey)) return;
+    const color = PLATFORM_DEFAULT_COLORS[platformKey] || '#8B5CF6';
+    addService({ id: platformKey, name: platformName, color });
+  }, [hasService, addService]);
 
   const handleSelectTmdb = async (result: TmdbResult) => {
     if (shows.some(s => s.name.toLowerCase() === result.name.toLowerCase())) {
@@ -116,11 +120,21 @@ const AddShowSearch = () => {
     const id = `tmdb-${result.id}-${Date.now()}`;
     const posterUrl = result.poster_path ? `${TMDB_IMG_BASE}/w500${result.poster_path}` : '/placeholder.svg';
 
+    // Fetch streaming availability and auto-set platform
+    let platform: string = 'manual';
+    let platformName: string | null = null;
+    const suggestion = await fetchStreamingAvailability(result.id).catch(() => null);
+    if (suggestion) {
+      platform = suggestion.platformKey;
+      platformName = suggestion.platformName;
+      ensurePlatformExists(suggestion.platformKey, suggestion.platformName);
+    }
+
     const tracked: TrackedShow = {
       id,
       name: result.name,
       poster: posterUrl,
-      platform: 'manual' as Platform,
+      platform: platform as Platform,
       status: 'ongoing',
       releaseType: 'weekly',
       paused: false,
@@ -130,15 +144,10 @@ const AddShowSearch = () => {
     };
 
     addShow(tracked);
-    trackEvent('show_added_search', { platform: 'tmdb', tmdb_id: result.id });
-    toast({ title: `✓ ${result.name} added to your watchlist`, className: 'bg-platform-prime/90 border-platform-prime text-foreground', duration: 2000 });
+    trackEvent('show_added_search', { platform, tmdb_id: result.id });
 
-    // Fetch streaming suggestion in background
-    setStreamingSuggestion(null);
-    setLastAddedShow({ id, name: result.name });
-    fetchStreamingAvailability(result.id).then(suggestion => {
-      if (suggestion) setStreamingSuggestion(suggestion);
-    });
+    const platformMsg = platformName ? ` on ${platformName}` : '';
+    toast({ title: `✓ ${result.name} added${platformMsg}`, className: 'bg-platform-prime/90 border-platform-prime text-foreground', duration: 2000 });
 
     setQuery('');
     setResults([]);
