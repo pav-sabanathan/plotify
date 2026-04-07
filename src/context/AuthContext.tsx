@@ -60,9 +60,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       .eq('user_id', userId)
       .limit(1);
     if (!data || data.length === 0) {
+      const token = crypto.randomUUID();
+      if (token.length < 32) throw new Error('Generated token is too short');
       await supabase.from('webcal_subscriptions').insert({
         user_id: userId,
-        token: crypto.randomUUID(),
+        token,
       });
     }
   }, []);
