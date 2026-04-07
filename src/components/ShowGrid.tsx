@@ -72,24 +72,21 @@ const ShowGrid = () => {
           <div
             key={show.id}
             className={cn(
-              'group relative rounded-xl overflow-hidden bg-card border transition-all hover:scale-[1.02] animate-fade-in',
+              'group relative rounded-xl overflow-hidden bg-card border transition-all hover:scale-[1.02] animate-fade-in cursor-pointer',
               borderClass,
               'border-opacity-30',
               show.paused && 'opacity-50'
             )}
             style={customColor ? { borderColor: customColor + '4D' } : undefined}
-            // 4D = ~30% opacity in hex
+            onClick={() => openDetail({ showId: show.id })}
           >
-            <button
-              onClick={() => openDetail({ showId: show.id })}
-              className="w-full aspect-[2/3] overflow-hidden block cursor-pointer"
-            >
+            <div className="w-full aspect-[2/3] overflow-hidden">
               {isPlaceholder(show.poster) ? (
                 <FallbackPoster name={show.name} platform={show.platform} className="w-full h-full" customServices={customServices} />
               ) : (
                 <img src={show.poster} alt={show.name} className="w-full h-full object-cover" loading="lazy" />
               )}
-            </button>
+            </div>
 
             <div className="p-3 space-y-2">
               <p className="font-semibold text-sm truncate">{show.name}</p>
