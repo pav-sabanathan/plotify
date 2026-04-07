@@ -117,7 +117,7 @@ export const CustomServicesProvider: React.FC<{ children: React.ReactNode }> = (
   }, [user]);
 
   const hasService = useCallback((id: string) => {
-    return services.some(s => s.id === id);
+    return services.some(s => s.id === id || s.name.toLowerCase() === id.toLowerCase());
   }, [services]);
 
   const getServiceById = useCallback((id: string) => {
