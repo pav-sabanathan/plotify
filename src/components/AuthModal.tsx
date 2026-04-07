@@ -6,9 +6,6 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Eye, EyeOff } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Eye, EyeOff } from 'lucide-react';
 
 const AuthModal = () => {
   const { showAuthModal, setShowAuthModal, authModalView, setAuthModalView, signIn, signUp, signInWithGoogle, resetPassword, resendVerification } = useAuth();
