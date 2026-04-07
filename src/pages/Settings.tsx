@@ -10,6 +10,7 @@ import FeedbackModal from '@/components/FeedbackModal';
 import ColorWheelModal from '@/components/ColorWheelModal';
 import { toast } from '@/hooks/use-toast';
 import CalendarFeedSection from '@/components/CalendarFeedSection';
+import ProfileSection from '@/components/ProfileSection';
 
 const BUILT_IN_SERVICES = [
   { key: 'netflix', label: 'Netflix', color: '#E50914' },
@@ -176,6 +177,14 @@ const Settings = () => {
         </button>
         <h1 className="text-lg font-semibold">Settings</h1>
       </div>
+
+      {/* SECTION 0 — Profile (signed-in only) */}
+      {user && (
+        <>
+          <ProfileSection />
+          <Separator className="bg-border" />
+        </>
+      )}
 
       {/* SECTION 1 — Streaming Services */}
       <section className="space-y-3">
