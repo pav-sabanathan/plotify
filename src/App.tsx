@@ -87,6 +87,7 @@ const App = () => {
                 <Route path="/privacy" element={<AppShell><Privacy /></AppShell>} />
                 <Route path="/terms" element={<AppShell><Terms /></AppShell>} />
                 <Route path="/settings" element={<AppShell><Settings /></AppShell>} />
+                <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="*" element={<AppShell><NotFound /></AppShell>} />
               </Routes>
               <ShowDetailPanel />
