@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useCallback, useEffect, use
 import { TrackedShow, Platform } from '@/types/show';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
+import { subscribeToUserRealtime } from '@/lib/userRealtime';
 
 const STORAGE_KEY = 'plotify-shows';
 const WATCHED_KEY = 'plotify-watched';
@@ -247,26 +248,16 @@ export const ShowsProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     if (isGuest || !user) return;
 
-    const showsSub = supabase
-      .channel(`user-${user.id}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'shows', filter: `user_id=eq.${user.id}` }, async () => {
+    return subscribeToUserRealtime(user.id, {
+      onShowsChange: async () => {
         const { data } = await supabase.from('shows').select('*').eq('user_id', user.id);
         if (data) setShows(data.map(dbRowToShow));
-      })
-      .subscribe();
-
-    const watchSub = supabase
-      .channel(`user-${user.id}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'watch_progress', filter: `user_id=eq.${user.id}` }, async () => {
+      },
+      onWatchProgressChange: async () => {
         const { data } = await supabase.from('watch_progress').select('*').eq('user_id', user.id);
         if (data) setWatchedEpisodes(dbWatchedToMap(data));
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(showsSub);
-      supabase.removeChannel(watchSub);
-    };
+      },
+    });
   }, [user, isGuest]);
 
   const addShow = useCallback(async (show: TrackedShow) => {
