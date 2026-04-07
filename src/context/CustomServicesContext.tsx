@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
+import { subscribeToUserRealtime } from '@/lib/userRealtime';
 
 export interface CustomService {
   id: string;
@@ -78,9 +79,8 @@ export const CustomServicesProvider: React.FC<{ children: React.ReactNode }> = (
   useEffect(() => {
     if (isGuest || !user) return;
 
-    const sub = supabase
-      .channel(`user:${user.id}:services`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'custom_services', filter: `user_id=eq.${user.id}` }, async () => {
+    return subscribeToUserRealtime(user.id, {
+      onCustomServicesChange: async () => {
         const { data } = await supabase.from('custom_services').select('*').eq('user_id', user.id);
         if (data) {
           setServices(data.map(row => ({
@@ -89,12 +89,8 @@ export const CustomServicesProvider: React.FC<{ children: React.ReactNode }> = (
             color: row.colour,
           })));
         }
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(sub);
-    };
+      },
+    });
   }, [user, isGuest]);
 
   const addService = useCallback(async (service: CustomService) => {
