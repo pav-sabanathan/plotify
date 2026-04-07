@@ -66,6 +66,10 @@ const AuthModal = () => {
       setError(result.error);
     } else {
       handleClose();
+      // If signed in from landing page, go to home
+      if (location.pathname === '/') {
+        navigate('/home', { replace: true });
+      }
     }
   };
 
