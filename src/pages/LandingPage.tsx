@@ -104,17 +104,19 @@ const LandingPage = () => {
       <section className="relative overflow-hidden">
         {/* Poster grid background */}
         {posters.length > 0 && (
-          <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
-            <div className="grid grid-cols-5 md:grid-cols-7 gap-2 md:gap-3 opacity-40 rotate-[-4deg] scale-110 pointer-events-none select-none">
-              {posters.slice(0, 14).map((show, i) => (
-                <img
-                  key={`${show.title}-${i}`}
-                  src={show.url}
-                  alt=""
-                  loading={i < 7 ? 'eager' : 'lazy'}
-                  className="w-20 md:w-28 rounded-lg object-cover aspect-[2/3]"
-                />
-              ))}
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="grid grid-cols-2 sm:grid-cols-5 md:grid-cols-7 gap-2 md:gap-3 opacity-40 sm:rotate-[-4deg] sm:scale-110 pointer-events-none select-none w-full px-4 sm:px-0 sm:w-auto">
+                {posters.slice(0, 14).map((show, i) => (
+                  <img
+                    key={`${show.title}-${i}`}
+                    src={show.url}
+                    alt=""
+                    loading={i < 7 ? 'eager' : 'lazy'}
+                    className="w-full sm:w-20 md:w-28 rounded-lg object-cover aspect-[2/3]"
+                  />
+                ))}
+              </div>
             </div>
             {/* Gradient overlay for readability */}
             <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/50 to-background" />
