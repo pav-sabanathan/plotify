@@ -1,25 +1,34 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 
 const AuthCallback = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     const handleCallback = async () => {
-      // Supabase puts tokens in the URL hash; the JS client picks them up automatically
-      const { data: { session }, error } = await supabase.auth.getSession();
+      const code = searchParams.get('code');
 
-      if (error) {
-        console.error('Auth callback error:', error);
+      if (code) {
+        // PKCE flow: exchange the code for a session
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (error) {
+          console.error('Auth callback error:', error);
+        }
+      } else {
+        // Implicit/magic-link flow: tokens are in the URL hash, picked up automatically
+        const { error } = (await supabase.auth.getSession()).error ? { error: (await supabase.auth.getSession()).error } : { error: null };
+        if (error) {
+          console.error('Auth callback error:', error);
+        }
       }
 
-      // Whether session exists or not, redirect to home
       navigate('/home', { replace: true });
     };
 
     handleCallback();
-  }, [navigate]);
+  }, [navigate, searchParams]);
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center">
