@@ -55,7 +55,8 @@ async function fetchTvMazeSchedule(title: string): Promise<{ day?: number; time?
 
 const AddShowSearch = () => {
   const { shows, addShow, updateShow, addShowFormRef } = useShows();
-  const { services: customServices } = useCustomServices();
+  const { services: customServices, addService, hasService } = useCustomServices();
+  const { user } = useAuth();
   const [query, setQuery] = useState(addShowFormRef.current.query);
   const [showManual, setShowManual] = useState(addShowFormRef.current.showManual);
   const [manualForm, setManualForm] = useState(addShowFormRef.current.manualForm);
