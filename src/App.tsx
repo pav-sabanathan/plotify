@@ -13,6 +13,7 @@ import ShowDetailPanel from "./components/ShowDetailPanel";
 import AuthModal from "./components/AuthModal";
 import ProfileSetupModal from "./components/ProfileSetupModal";
 import ImportDataWrapper from "./components/ImportDataWrapper";
+import ErrorBoundary from "./components/ErrorBoundary";
 import OfflineBanner from "./components/OfflineBanner";
 import Index from "./pages/Index";
 import MyShows from "./pages/MyShows";
@@ -90,7 +91,9 @@ const App = () => {
               <ShowDetailPanel />
               <AuthModal />
               <ProfileSetupModal />
-              <ImportDataWrapper />
+              <ErrorBoundary>
+                <ImportDataWrapper />
+              </ErrorBoundary>
             </BrowserRouter>
           </ShowsProvider>
           </CustomServicesProvider>

@@ -66,7 +66,7 @@ const ImportDataModal = ({ onDone }: { onDone: (didImport?: boolean) => void }) 
     } finally {
       localStorage.setItem(IMPORT_DONE_KEY, '1');
       setImporting(false);
-      onDone();
+      onDone(true);
     }
   };
 
