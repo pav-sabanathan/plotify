@@ -72,28 +72,25 @@ const ShowGrid = () => {
           <div
             key={show.id}
             className={cn(
-              'group relative rounded-xl overflow-hidden bg-card border transition-all hover:scale-[1.02] animate-fade-in',
+              'group relative rounded-xl overflow-hidden bg-card border transition-all hover:scale-[1.02] animate-fade-in cursor-pointer',
               borderClass,
               'border-opacity-30',
               show.paused && 'opacity-50'
             )}
             style={customColor ? { borderColor: customColor + '4D' } : undefined}
-            // 4D = ~30% opacity in hex
+            onClick={() => openDetail({ showId: show.id })}
           >
-            <button
-              onClick={() => openDetail({ showId: show.id })}
-              className="w-full aspect-[2/3] overflow-hidden block cursor-pointer"
-            >
+            <div className="w-full aspect-[2/3] overflow-hidden">
               {isPlaceholder(show.poster) ? (
                 <FallbackPoster name={show.name} platform={show.platform} className="w-full h-full" customServices={customServices} />
               ) : (
                 <img src={show.poster} alt={show.name} className="w-full h-full object-cover" loading="lazy" />
               )}
-            </button>
+            </div>
 
             <div className="p-3 space-y-2">
               <p className="font-semibold text-sm truncate">{show.name}</p>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-1.5" onClick={(e) => e.stopPropagation()}>
                 <PlatformBadge platform={show.platform} />
                 <StatusBadge status={getDisplayStatus(show)} />
               </div>
@@ -102,7 +99,7 @@ const ShowGrid = () => {
                 {watchedCount} watched · Season {show.episodes[0]?.season ?? 1}
               </span>
 
-              <div className="flex items-center gap-1.5 pt-1">
+              <div className="flex items-center gap-1.5 pt-1" onClick={(e) => e.stopPropagation()}>
                 <button
                   onClick={() => togglePause(show.id)}
                   className="flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-[10px] font-medium text-secondary-foreground hover:bg-accent transition-colors"

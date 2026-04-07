@@ -1,5 +1,6 @@
 import { useCustomServices } from '@/context/CustomServicesContext';
 import { getPlatformLabel, getPlatformBgClass, getPlatformColor, getPlatformContrastClass } from '@/lib/platformUtils';
+import { getPlatformLogoData } from './PlatformLogo';
 import { cn } from '@/lib/utils';
 
 interface PlatformBadgeProps {
@@ -13,18 +14,32 @@ const PlatformBadge = ({ platform, className }: PlatformBadgeProps) => {
   const bgClass = getPlatformBgClass(platform);
   const customColor = getPlatformColor(platform, services);
   const contrastClass = getPlatformContrastClass(platform, services);
+  const logoData = getPlatformLogoData(platform, services);
 
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
+        'inline-flex items-center justify-center rounded-full px-2.5 py-0.5 text-xs font-medium',
         bgClass,
         contrastClass,
         className
       )}
       style={customColor ? { backgroundColor: customColor } : undefined}
+      title={label}
     >
-      {label}
+      {logoData ? (
+        <svg
+          viewBox={logoData.viewBox}
+          width={16}
+          height={16}
+          fill="currentColor"
+          aria-label={label}
+        >
+          <path d={logoData.path} />
+        </svg>
+      ) : (
+        label
+      )}
     </span>
   );
 };
