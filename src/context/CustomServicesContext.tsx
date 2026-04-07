@@ -79,7 +79,7 @@ export const CustomServicesProvider: React.FC<{ children: React.ReactNode }> = (
     if (isGuest || !user) return;
 
     const sub = supabase
-      .channel('custom-services-realtime')
+      .channel(`user-${user.id}-custom-services`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'custom_services', filter: `user_id=eq.${user.id}` }, async () => {
         const { data } = await supabase.from('custom_services').select('*').eq('user_id', user.id);
         if (data) {
