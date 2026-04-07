@@ -90,7 +90,7 @@ const ShowGrid = () => {
 
             <div className="p-3 space-y-2">
               <p className="font-semibold text-sm truncate">{show.name}</p>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-1.5" onClick={(e) => e.stopPropagation()}>
                 <PlatformBadge platform={show.platform} />
                 <StatusBadge status={getDisplayStatus(show)} />
               </div>
@@ -99,7 +99,7 @@ const ShowGrid = () => {
                 {watchedCount} watched · Season {show.episodes[0]?.season ?? 1}
               </span>
 
-              <div className="flex items-center gap-1.5 pt-1">
+              <div className="flex items-center gap-1.5 pt-1" onClick={(e) => e.stopPropagation()}>
                 <button
                   onClick={() => togglePause(show.id)}
                   className="flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-[10px] font-medium text-secondary-foreground hover:bg-accent transition-colors"
