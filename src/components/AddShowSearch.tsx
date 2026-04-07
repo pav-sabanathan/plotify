@@ -36,6 +36,38 @@ async function searchTmdb(query: string): Promise<TmdbResult[]> {
   return (data.results as TmdbResult[]).slice(0, 8);
 }
 
+async function fetchTmdbStatus(tmdbId: number): Promise<{ status: string; seasons: number }> {
+  try {
+    const res = await fetch(`https://api.themoviedb.org/3/tv/${tmdbId}`, {
+      headers: { Authorization: `Bearer ${TMDB_TOKEN}` },
+    });
+    if (!res.ok) return { status: 'Returning Series', seasons: 1 };
+    const data = await res.json();
+    return { status: data.status || 'Returning Series', seasons: data.number_of_seasons || 1 };
+  } catch {
+    return { status: 'Returning Series', seasons: 1 };
+  }
+}
+
+function mapTmdbStatus(tmdbStatus: string): 'ongoing' | 'ended' {
+  const ended = ['Ended', 'Canceled', 'Cancelled'];
+  return ended.some(s => tmdbStatus.toLowerCase() === s.toLowerCase()) ? 'ended' : 'ongoing';
+}
+
+async function fetchTvMazeEpisodeCount(showName: string, season: number): Promise<number> {
+  try {
+    const searchRes = await fetch(`https://api.tvmaze.com/singlesearch/shows?q=${encodeURIComponent(showName)}`);
+    if (!searchRes.ok) return 0;
+    const show = await searchRes.json();
+    const epsRes = await fetch(`https://api.tvmaze.com/shows/${show.id}/episodes`);
+    if (!epsRes.ok) return 0;
+    const eps = await epsRes.json();
+    return eps.filter((e: any) => e.season === season).length;
+  } catch {
+    return 0;
+  }
+}
+
 async function fetchTvMazeSchedule(title: string): Promise<{ day?: number; time?: string }> {
   try {
     const res = await fetch(`https://api.tvmaze.com/search/shows?q=${encodeURIComponent(title)}`);
@@ -114,33 +146,42 @@ const AddShowSearch = () => {
       return;
     }
 
-    // Fetch TVMaze schedule data
-    const schedule = await fetchTvMazeSchedule(result.name);
+    // Fetch schedule, TMDb status, streaming availability in parallel
+    const [schedule, tmdbDetails, suggestion] = await Promise.all([
+      fetchTvMazeSchedule(result.name),
+      fetchTmdbStatus(result.id),
+      fetchStreamingAvailability(result.id).catch(() => null),
+    ]);
 
     const id = `tmdb-${result.id}-${Date.now()}`;
     const posterUrl = result.poster_path ? `${TMDB_IMG_BASE}/w500${result.poster_path}` : '/placeholder.svg';
 
-    // Fetch streaming availability and auto-set platform
     let platform: string = 'manual';
     let platformName: string | null = null;
-    const suggestion = await fetchStreamingAvailability(result.id).catch(() => null);
     if (suggestion) {
       platform = suggestion.platformKey;
       platformName = suggestion.platformName;
       ensurePlatformExists(suggestion.platformKey, suggestion.platformName);
     }
 
+    const showStatus = mapTmdbStatus(tmdbDetails.status);
+    const latestSeason = tmdbDetails.seasons;
+
+    // Fetch episode count for the latest season from TVMaze
+    const totalEps = await fetchTvMazeEpisodeCount(result.name, latestSeason);
+
     const tracked: TrackedShow = {
       id,
       name: result.name,
       poster: posterUrl,
       platform: platform as Platform,
-      status: 'ongoing',
+      status: showStatus,
       releaseType: 'weekly',
       paused: false,
       releaseDay: schedule.day ?? 1,
       releaseTime: schedule.time || '20:00',
       episodes: [],
+      totalEpisodes: totalEps || undefined,
     };
 
     addShow(tracked);
