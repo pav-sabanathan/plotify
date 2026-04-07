@@ -54,7 +54,7 @@ Deno.serve(async (req: Request) => {
   // Strip .ics extension if present
   token = token.replace(/\.ics$/, "");
 
-  if (!token) {
+  if (!token || token.length < 32) {
     return new Response("Not Found", { status: 404 });
   }
 

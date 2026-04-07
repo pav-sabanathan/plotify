@@ -42,6 +42,7 @@ const CalendarFeedSection = () => {
   const handleRegenerate = async () => {
     setRegenerating(true);
     const newToken = crypto.randomUUID();
+    if (newToken.length < 32) throw new Error('Generated token is too short');
     await supabase
       .from('webcal_subscriptions')
       .update({ token: newToken })
