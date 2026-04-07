@@ -61,18 +61,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const ensureWebcalToken = useCallback(async (userId: string) => {
-    const { data } = await supabase
-      .from('webcal_subscriptions')
-      .select('id')
-      .eq('user_id', userId)
-      .limit(1);
-    if (!data || data.length === 0) {
-      const token = crypto.randomUUID();
-      if (token.length < 32) throw new Error('Generated token is too short');
-      await supabase.from('webcal_subscriptions').insert({
-        user_id: userId,
-        token,
-      });
+    try {
+      const { data } = await supabase
+        .from('webcal_subscriptions')
+        .select('id')
+        .eq('user_id', userId)
+        .limit(1);
+      if (!data || data.length === 0) {
+        const token = crypto.randomUUID();
+        await supabase.from('webcal_subscriptions').insert({
+          user_id: userId,
+          token,
+        });
+      }
+    } catch (e) {
+      console.error('Failed to ensure webcal token:', e);
     }
   }, []);
 
