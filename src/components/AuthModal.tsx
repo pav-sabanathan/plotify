@@ -8,6 +8,8 @@ import { Eye, EyeOff } from 'lucide-react';
 
 const AuthModal = () => {
   const { showAuthModal, setShowAuthModal, authModalView, setAuthModalView, signIn, signUp, signInWithGoogle, resetPassword } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
