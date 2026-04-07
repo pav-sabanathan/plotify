@@ -122,7 +122,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       if (error.message.includes('Invalid login credentials')) {
-        return { error: 'Incorrect email or password. Please try again.' };
+        return { error: 'No account found, or incorrect password. Please check your details or sign up.' };
       }
       if (error.message.includes('Email not confirmed')) {
         return { error: 'Please verify your email address before signing in.' };

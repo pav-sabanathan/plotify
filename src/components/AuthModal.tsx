@@ -190,7 +190,19 @@ const AuthModal = () => {
               </button>
             </div>
 
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && (
+              <div>
+                <p className="text-sm text-destructive">{error}</p>
+                {isSignIn && error.includes('No account found') && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    New to Plotify?{' '}
+                    <button type="button" onClick={() => switchView('sign-up')} className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 hover:underline">
+                      Sign up
+                    </button>
+                  </p>
+                )}
+              </div>
+            )}
 
             <Button type="submit" disabled={submitting} className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white">
               {submitting ? 'Loading…' : isSignIn ? 'Sign In' : 'Create Account'}
