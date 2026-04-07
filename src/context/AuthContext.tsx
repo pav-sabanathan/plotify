@@ -85,6 +85,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .limit(1);
 
       if (error) {
+        // Silently skip foreign key constraint errors (user row not yet committed)
+        if ((error as any).code === '23503') return;
         console.error('ensureWebcalToken select error:', error);
         return;
       }
@@ -96,6 +98,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           token,
         });
         if (insertError) {
+          // Silently skip foreign key constraint errors
+          if ((insertError as any).code === '23503') return;
           console.error('ensureWebcalToken insert error:', insertError);
         }
       }
@@ -111,12 +115,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         if (currentSession?.user) {
-          // Use setTimeout to avoid Supabase client deadlock
           const userId = currentSession.user.id;
+          // Use setTimeout to avoid Supabase client deadlock
           setTimeout(() => {
             fetchProfile(userId).catch((e) => console.error('fetchProfile unhandled:', e));
-            ensureWebcalToken(userId).catch((e) => console.error('ensureWebcalToken unhandled:', e));
           }, 0);
+          // For new sign-ups, delay webcal token creation to let the DB trigger commit the user row.
+          // Skip entirely during INITIAL_SESSION to avoid running during auth callback flow.
+          if (_event !== 'INITIAL_SESSION') {
+            const delay = _event === 'SIGNED_IN' ? 2000 : 0;
+            setTimeout(() => {
+              ensureWebcalToken(userId).catch((e) => console.error('ensureWebcalToken unhandled:', e));
+            }, delay);
+          }
         } else {
           setProfile(null);
         }
@@ -132,6 +143,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(s?.user ?? null);
       if (s?.user) {
         fetchProfile(s.user.id).catch((e) => console.error('fetchProfile unhandled:', e));
+        // Delay webcal token creation to let DB trigger commit
+        setTimeout(() => {
+          ensureWebcalToken(s.user.id).catch((e) => console.error('ensureWebcalToken unhandled:', e));
+        }, 2000);
       }
       setLoading(false);
     });

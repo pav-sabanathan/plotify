@@ -28,7 +28,8 @@ const notifyListeners = async (listeners: Set<AsyncCallback>) => {
 const createChannelEntry = (userId: string): ChannelEntry => {
   const listeners = createListenerSet();
 
-  const channel = supabase
+  // Register all .on() listeners BEFORE calling .subscribe()
+  supabase
     .channel(`user-${userId}`)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'shows', filter: `user_id=eq.${userId}` }, async () => {
       await notifyListeners(listeners.shows);
@@ -45,6 +46,18 @@ const createChannelEntry = (userId: string): ChannelEntry => {
     listeners,
     refCount: 0,
   };
+};
+
+/**
+ * Tear down an existing channel for a user so it can be cleanly rebuilt.
+ */
+const destroyChannel = (userId: string) => {
+  const topic = `realtime:user-${userId}`;
+  const realtimeChannel = supabase.getChannels().find((ch) => ch.topic === topic);
+  if (realtimeChannel) {
+    void supabase.removeChannel(realtimeChannel);
+  }
+  channels.delete(userId);
 };
 
 type UserRealtimeHandlers = {
@@ -78,11 +91,7 @@ export const subscribeToUserRealtime = (userId: string, handlers: UserRealtimeHa
     currentEntry.refCount -= 1;
 
     if (currentEntry.refCount <= 0) {
-      const realtimeChannel = supabase.getChannels().find((item) => item.topic === `user-${userId}`);
-      if (realtimeChannel) {
-        void supabase.removeChannel(realtimeChannel);
-      }
-      channels.delete(userId);
+      destroyChannel(userId);
     }
   };
 };
