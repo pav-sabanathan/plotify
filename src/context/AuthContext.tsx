@@ -131,9 +131,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const signInWithGoogle = useCallback(async () => {
+    // After OAuth, return to current page — unless on landing page, then go to /home
+    const currentPath = window.location.pathname;
+    const redirectTo = currentPath === '/'
+      ? `${window.location.origin}/home`
+      : window.location.href;
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.origin },
+      options: { redirectTo },
     });
     if (error) return { error: 'Something went wrong. Please try again.' };
     return { error: null };

@@ -23,6 +23,7 @@ import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import LandingPage from "./pages/LandingPage";
 import { useEffect } from "react";
+import { useAuth } from "./context/AuthContext";
 import { initPostHog } from "./lib/posthog";
 
 const queryClient = new QueryClient();
