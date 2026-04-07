@@ -16,10 +16,10 @@ const GuestBanner = () => {
   return (
     <div className="flex items-center justify-between bg-surface-1 border border-border rounded-lg px-4 py-2.5 text-sm">
       <p className="text-muted-foreground">
-        Sign in to save your shows across devices{' '}
         <button onClick={handleSignIn} className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 hover:underline font-medium">
-          Sign In
-        </button>
+          Sign in
+        </button>{' '}
+        to save your shows across devices
       </p>
       <button onClick={() => setDismissed(true)} className="text-muted-foreground hover:text-foreground ml-2 shrink-0">
         <X className="h-4 w-4" />
