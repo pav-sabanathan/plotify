@@ -9,7 +9,7 @@ interface TvMazeEpisode {
   airdate: string;
 }
 
-async function searchTvMazeShow(name: string): Promise<number | null> {
+export async function searchTvMazeShow(name: string): Promise<number | null> {
   try {
     const res = await fetch(`https://api.tvmaze.com/singlesearch/shows?q=${encodeURIComponent(name)}`);
     if (!res.ok) return null;
@@ -20,7 +20,7 @@ async function searchTvMazeShow(name: string): Promise<number | null> {
   }
 }
 
-async function fetchAllEpisodes(tvMazeId: number): Promise<TvMazeEpisode[]> {
+export async function fetchAllEpisodes(tvMazeId: number): Promise<TvMazeEpisode[]> {
   try {
     const res = await fetch(`https://api.tvmaze.com/shows/${tvMazeId}/episodes`);
     if (!res.ok) return [];
