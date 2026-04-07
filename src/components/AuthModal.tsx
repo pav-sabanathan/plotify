@@ -111,7 +111,7 @@ const AuthModal = () => {
           <div className="space-y-4">
             <h2 className="text-xl font-semibold text-foreground">Check your email</h2>
             <p className="text-sm text-muted-foreground">
-              We've sent a verification link to <span className="font-medium text-foreground">{signUpEmail}</span>. Click it to activate your account.
+              We've sent a verification link to <span className="font-medium text-foreground">{signUpEmail}</span>. For the best experience, open the link on this device. If you verify on another device, use the sign in button below to continue.
             </p>
             {error && <p className="text-sm text-destructive">{error}</p>}
             <Button
@@ -122,6 +122,19 @@ const AuthModal = () => {
               onClick={handleResendFromModal}
             >
               {resending ? 'Sending…' : 'Resend email'}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              className="w-full"
+              onClick={() => {
+                setSignUpSuccess(false);
+                setSignUpEmail('');
+                setError(null);
+                switchView('sign-in');
+              }}
+            >
+              Sign in
             </Button>
           </div>
         ) : forgotMode ? (
