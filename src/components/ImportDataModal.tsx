@@ -14,7 +14,7 @@ import { Loader2 } from 'lucide-react';
 
 const IMPORT_DONE_KEY = 'plotify-import-checked';
 
-const ImportDataModal = ({ onDone }: { onDone: () => void }) => {
+const ImportDataModal = ({ onDone }: { onDone: (didImport?: boolean) => void }) => {
   const { user } = useAuth();
   const [importing, setImporting] = useState(false);
 
@@ -66,7 +66,7 @@ const ImportDataModal = ({ onDone }: { onDone: () => void }) => {
     } finally {
       localStorage.setItem(IMPORT_DONE_KEY, '1');
       setImporting(false);
-      onDone();
+      onDone(true);
     }
   };
 
