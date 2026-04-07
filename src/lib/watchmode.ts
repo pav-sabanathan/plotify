@@ -42,6 +42,15 @@ const PLATFORM_DISPLAY: Record<string, string> = {
   'suggested-britbox': 'BritBox',
 };
 
+export const PLATFORM_DEFAULT_COLORS: Record<string, string> = {
+  'suggested-crave': '#0057FF',
+  'suggested-paramount': '#0064FF',
+  'suggested-max': '#5822B4',
+  'suggested-crunchyroll': '#F47521',
+  'suggested-peacock': '#F5C400',
+  'suggested-britbox': '#00A8A8',
+};
+
 export interface StreamingSuggestion {
   platformKey: string;
   platformName: string;

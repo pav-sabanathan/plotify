@@ -6,7 +6,9 @@ import { Search, Plus, XCircle, Loader2, ArrowLeft, Film } from 'lucide-react';
 import PlatformBadge from './PlatformBadge';
 import { toast } from '@/hooks/use-toast';
 import { trackEvent } from '@/lib/posthog';
-import { fetchStreamingAvailability, StreamingSuggestion } from '@/lib/watchmode';
+import { fetchStreamingAvailability, StreamingSuggestion, PLATFORM_DEFAULT_COLORS } from '@/lib/watchmode';
+import { useAuth } from '@/context/AuthContext';
+import { isBuiltInPlatform } from '@/lib/platformUtils';
 
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const TMDB_TOKEN = import.meta.env.VITE_PUBLIC_TMDB_TOKEN as string;
