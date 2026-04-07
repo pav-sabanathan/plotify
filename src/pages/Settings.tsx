@@ -177,6 +177,14 @@ const Settings = () => {
         <h1 className="text-lg font-semibold">Settings</h1>
       </div>
 
+      {/* SECTION 0 — Profile (signed-in only) */}
+      {user && (
+        <>
+          <ProfileSection />
+          <Separator className="bg-border" />
+        </>
+      )}
+
       {/* SECTION 1 — Streaming Services */}
       <section className="space-y-3">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground px-1">
