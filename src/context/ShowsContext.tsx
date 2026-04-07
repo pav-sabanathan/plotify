@@ -247,12 +247,16 @@ export const ShowsProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     if (isGuest || !user) return;
 
-    const sub = supabase
-      .channel(`user:${user.id}:shows`)
+    const showsSub = supabase
+      .channel(`user-${user.id}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'shows', filter: `user_id=eq.${user.id}` }, async () => {
         const { data } = await supabase.from('shows').select('*').eq('user_id', user.id);
         if (data) setShows(data.map(dbRowToShow));
       })
+      .subscribe();
+
+    const watchSub = supabase
+      .channel(`user-${user.id}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'watch_progress', filter: `user_id=eq.${user.id}` }, async () => {
         const { data } = await supabase.from('watch_progress').select('*').eq('user_id', user.id);
         if (data) setWatchedEpisodes(dbWatchedToMap(data));
@@ -260,7 +264,8 @@ export const ShowsProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       .subscribe();
 
     return () => {
-      supabase.removeChannel(sub);
+      supabase.removeChannel(showsSub);
+      supabase.removeChannel(watchSub);
     };
   }, [user, isGuest]);
 
