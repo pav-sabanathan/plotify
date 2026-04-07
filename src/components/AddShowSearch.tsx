@@ -6,7 +6,7 @@ import { Search, Plus, XCircle, Loader2, ArrowLeft, Film } from 'lucide-react';
 import PlatformBadge from './PlatformBadge';
 import { toast } from '@/hooks/use-toast';
 import { trackEvent } from '@/lib/posthog';
-import { fetchStreamingAvailability, StreamingSuggestion, PLATFORM_DEFAULT_COLORS } from '@/lib/watchmode';
+import { fetchStreamingAvailability, PLATFORM_DEFAULT_COLORS } from '@/lib/watchmode';
 import { useAuth } from '@/context/AuthContext';
 import { isBuiltInPlatform } from '@/lib/platformUtils';
 
