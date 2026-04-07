@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Eye, EyeOff } from 'lucide-react';
 
 const AuthModal = () => {
-  const { showAuthModal, setShowAuthModal, authModalView, setAuthModalView, signIn, signUp, signInWithGoogle, resetPassword } = useAuth();
+  const { showAuthModal, setShowAuthModal, authModalView, setAuthModalView, signIn, signUp, signInWithGoogle, resetPassword, resendVerification } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -18,6 +18,9 @@ const AuthModal = () => {
   const [submitting, setSubmitting] = useState(false);
   const [forgotMode, setForgotMode] = useState(false);
   const [resetSent, setResetSent] = useState(false);
+  const [signUpSuccess, setSignUpSuccess] = useState(false);
+  const [signUpEmail, setSignUpEmail] = useState('');
+  const [resending, setResending] = useState(false);
 
   const resetForm = () => {
     setEmail('');
@@ -26,6 +29,8 @@ const AuthModal = () => {
     setShowPassword(false);
     setForgotMode(false);
     setResetSent(false);
+    setSignUpSuccess(false);
+    setSignUpEmail('');
   };
 
   const handleClose = () => {
@@ -39,6 +44,14 @@ const AuthModal = () => {
     setPassword('');
     setForgotMode(false);
     setResetSent(false);
+    setSignUpSuccess(false);
+  };
+
+  const handleResendFromModal = async () => {
+    setResending(true);
+    const { error } = await supabase.auth.resend({ type: 'signup', email: signUpEmail });
+    setResending(false);
+    if (error) setError('Could not resend. Please try again.');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -57,16 +70,24 @@ const AuthModal = () => {
       return;
     }
 
-    const result = authModalView === 'sign-in'
-      ? await signIn(email, password)
-      : await signUp(email, password);
-    
+    if (authModalView === 'sign-up') {
+      const result = await signUp(email, password);
+      setSubmitting(false);
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setSignUpEmail(email);
+        setSignUpSuccess(true);
+      }
+      return;
+    }
+
+    const result = await signIn(email, password);
     setSubmitting(false);
     if (result.error) {
       setError(result.error);
     } else {
       handleClose();
-      // If signed in from landing page, go to home
       if (location.pathname === '/') {
         navigate('/home', { replace: true });
       }
