@@ -120,18 +120,33 @@ export function useNewSeasonCheck() {
     setAlerts(prev => prev.filter(a => a.showId !== alert.showId));
 
     if (user) {
-      // Update season, episode, and last_checked_at atomically in Supabase
+      // Fetch episode count for the new season from TVMaze
+      const show = shows.find(s => s.id === alert.showId);
+      let totalEps: number | null = null;
+      if (show) {
+        try {
+          const { searchTvMazeShow, fetchAllEpisodes } = await import('@/hooks/useTvMazeEpisodes');
+          const tvMazeId = await searchTvMazeShow(show.name);
+          if (tvMazeId) {
+            const allEps = await fetchAllEpisodes(tvMazeId);
+            totalEps = allEps.filter(ep => ep.season === alert.newSeason).length || null;
+          }
+        } catch { /* skip */ }
+      }
+
+      // Update season, episode, total_episodes, and last_checked_at atomically in Supabase
       await supabase
         .from('shows')
         .update({
           season: alert.newSeason,
           current_episode: 1,
+          total_episodes: totalEps,
           last_checked_at: new Date().toISOString(),
         })
         .eq('id', alert.showId)
         .eq('user_id', user.id);
     }
-  }, [user]);
+  }, [user, shows]);
 
   const handleDismiss = useCallback((showId: string) => {
     const alert = alerts.find(a => a.showId === showId);
