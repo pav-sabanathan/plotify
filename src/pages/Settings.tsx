@@ -351,10 +351,24 @@ const Settings = () => {
             <div className="rounded-xl border border-border bg-card overflow-hidden divide-y divide-border">
               {services.map((service) => (
                 <div key={service.id} className="flex items-center justify-between px-4 py-3">
+                  {(() => {
+                    const sLogo = getPlatformLogo(service.name);
+                    return (
                   <div className="flex items-center gap-3">
-                    <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: service.color }} />
+                    {sLogo ? (
+                      <img
+                        src={sLogo.src}
+                        alt={service.name}
+                        className="h-4 w-auto max-w-[64px] shrink-0"
+                        style={sLogo.needsInvert ? { filter: 'brightness(0) invert(1)' } : undefined}
+                      />
+                    ) : (
+                      <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: service.color }} />
+                    )}
                     <span className="text-sm text-foreground">{service.name}</span>
                   </div>
+                    );
+                  })()}
                   <button
                     onClick={() => handleDeleteService(service)}
                     className="rounded-md p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
