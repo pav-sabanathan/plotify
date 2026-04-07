@@ -32,6 +32,8 @@ const NAME_ALIASES: Record<string, string> = {
   'netflix': 'netflix',
   'apple tv+': 'apple',
   'apple tv': 'apple',
+  'appletv+': 'apple',
+  'appletv': 'apple',
   'prime video': 'prime',
   'amazon prime': 'prime',
   'amazon prime video': 'prime',
