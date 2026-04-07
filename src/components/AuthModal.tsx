@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Eye, EyeOff } from 'lucide-react';
 
 const AuthModal = () => {
-  const { showAuthModal, setShowAuthModal, authModalView, setAuthModalView, signIn, signUp, signInWithGoogle, resetPassword } = useAuth();
+  const { showAuthModal, setShowAuthModal, authModalView, setAuthModalView, signIn, signUp, signInWithGoogle, resetPassword, resendVerification } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -18,6 +19,9 @@ const AuthModal = () => {
   const [submitting, setSubmitting] = useState(false);
   const [forgotMode, setForgotMode] = useState(false);
   const [resetSent, setResetSent] = useState(false);
+  const [signUpSuccess, setSignUpSuccess] = useState(false);
+  const [signUpEmail, setSignUpEmail] = useState('');
+  const [resending, setResending] = useState(false);
 
   const resetForm = () => {
     setEmail('');
@@ -26,6 +30,8 @@ const AuthModal = () => {
     setShowPassword(false);
     setForgotMode(false);
     setResetSent(false);
+    setSignUpSuccess(false);
+    setSignUpEmail('');
   };
 
   const handleClose = () => {
@@ -39,6 +45,14 @@ const AuthModal = () => {
     setPassword('');
     setForgotMode(false);
     setResetSent(false);
+    setSignUpSuccess(false);
+  };
+
+  const handleResendFromModal = async () => {
+    setResending(true);
+    const { error } = await supabase.auth.resend({ type: 'signup', email: signUpEmail });
+    setResending(false);
+    if (error) setError('Could not resend. Please try again.');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -57,16 +71,24 @@ const AuthModal = () => {
       return;
     }
 
-    const result = authModalView === 'sign-in'
-      ? await signIn(email, password)
-      : await signUp(email, password);
-    
+    if (authModalView === 'sign-up') {
+      const result = await signUp(email, password);
+      setSubmitting(false);
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setSignUpEmail(email);
+        setSignUpSuccess(true);
+      }
+      return;
+    }
+
+    const result = await signIn(email, password);
     setSubmitting(false);
     if (result.error) {
       setError(result.error);
     } else {
       handleClose();
-      // If signed in from landing page, go to home
       if (location.pathname === '/') {
         navigate('/home', { replace: true });
       }
@@ -85,7 +107,24 @@ const AuthModal = () => {
     <Dialog open={showAuthModal} onOpenChange={(open) => { if (!open) handleClose(); }}>
       <DialogContent className="sm:max-w-[400px] bg-card border-border p-0 max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain">
         <div className="p-6">
-        {forgotMode ? (
+        {signUpSuccess ? (
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold text-foreground">Check your email</h2>
+            <p className="text-sm text-muted-foreground">
+              We've sent a verification link to <span className="font-medium text-foreground">{signUpEmail}</span>. Click it to activate your account.
+            </p>
+            {error && <p className="text-sm text-destructive">{error}</p>}
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full border-border"
+              disabled={resending}
+              onClick={handleResendFromModal}
+            >
+              {resending ? 'Sending…' : 'Resend email'}
+            </Button>
+          </div>
+        ) : forgotMode ? (
           <form onSubmit={handleSubmit} className="space-y-4">
             <h2 className="text-xl font-semibold text-foreground">Reset password</h2>
             {resetSent ? (

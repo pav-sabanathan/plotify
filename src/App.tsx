@@ -23,6 +23,7 @@ import Terms from "./pages/Terms";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import LandingPage from "./pages/LandingPage";
+import AuthCallback from "./pages/AuthCallback";
 import { useEffect } from "react";
 import { useAuth } from "./context/AuthContext";
 import { initPostHog } from "./lib/posthog";
@@ -86,6 +87,7 @@ const App = () => {
                 <Route path="/privacy" element={<AppShell><Privacy /></AppShell>} />
                 <Route path="/terms" element={<AppShell><Terms /></AppShell>} />
                 <Route path="/settings" element={<AppShell><Settings /></AppShell>} />
+                <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="*" element={<AppShell><NotFound /></AppShell>} />
               </Routes>
               <ShowDetailPanel />
