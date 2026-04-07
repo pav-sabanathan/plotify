@@ -1,6 +1,6 @@
 import { useCustomServices } from '@/context/CustomServicesContext';
 import { getPlatformLabel, getPlatformBgClass, getPlatformColor, getPlatformContrastClass } from '@/lib/platformUtils';
-import { getPlatformLogoData } from './PlatformLogo';
+import { getPlatformLogo } from '@/lib/platformLogos';
 import { cn } from '@/lib/utils';
 
 interface PlatformBadgeProps {
@@ -14,7 +14,9 @@ const PlatformBadge = ({ platform, className }: PlatformBadgeProps) => {
   const bgClass = getPlatformBgClass(platform);
   const customColor = getPlatformColor(platform, services);
   const contrastClass = getPlatformContrastClass(platform, services);
-  const logoData = getPlatformLogoData(platform, services);
+
+  // Try to resolve a logo: first by platform key, then by display name
+  const logo = getPlatformLogo(platform) ?? getPlatformLogo(label);
 
   return (
     <span
@@ -27,16 +29,13 @@ const PlatformBadge = ({ platform, className }: PlatformBadgeProps) => {
       style={customColor ? { backgroundColor: customColor } : undefined}
       title={label}
     >
-      {logoData ? (
-        <svg
-          viewBox={logoData.viewBox}
-          width={16}
-          height={16}
-          fill="currentColor"
-          aria-label={label}
-        >
-          <path d={logoData.path} />
-        </svg>
+      {logo ? (
+        <img
+          src={logo.src}
+          alt={label}
+          className="h-5 w-auto max-w-[80px]"
+          style={logo.needsInvert ? { filter: 'brightness(0) invert(1)' } : undefined}
+        />
       ) : (
         label
       )}

@@ -11,6 +11,7 @@ import ColorWheelModal from '@/components/ColorWheelModal';
 import { toast } from '@/hooks/use-toast';
 import CalendarFeedSection from '@/components/CalendarFeedSection';
 import ProfileSection from '@/components/ProfileSection';
+import { getPlatformLogo } from '@/lib/platformLogos';
 
 const BUILT_IN_SERVICES = [
   { key: 'netflix', label: 'Netflix', color: '#E50914' },
@@ -194,17 +195,29 @@ const Settings = () => {
 
         {/* Built-in services */}
         <div className="rounded-xl border border-border bg-card overflow-hidden divide-y divide-border">
-          {BUILT_IN_SERVICES.map((service) => (
+          {BUILT_IN_SERVICES.map((service) => {
+              const logo = getPlatformLogo(service.key);
+              return (
             <div key={service.key} className="flex items-center justify-between px-4 py-3">
               <div className="flex items-center gap-3">
-                <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: service.color }} />
+                {logo ? (
+                  <img
+                    src={logo.src}
+                    alt={service.label}
+                    className="h-4 w-auto max-w-[64px]"
+                    style={logo.needsInvert ? { filter: 'brightness(0) invert(1)' } : undefined}
+                  />
+                ) : (
+                  <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: service.color }} />
+                )}
                 <span className="text-sm text-foreground">{service.label}</span>
               </div>
               <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
                 Built-in
               </span>
             </div>
-          ))}
+              );
+          })}
         </div>
 
         {/* First-time tooltip */}
@@ -225,6 +238,7 @@ const Settings = () => {
           <div className="grid grid-cols-2 gap-2">
             {SUGGESTED_SERVICES.map((s) => {
               const added = hasService(s.id);
+              const logo = getPlatformLogo(s.name);
               return (
                 <button
                   key={s.id}
@@ -234,7 +248,16 @@ const Settings = () => {
                     added ? 'opacity-60 cursor-default' : 'hover:bg-secondary/50 cursor-pointer'
                   }`}
                 >
-                  <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: s.color }} />
+                  {logo ? (
+                    <img
+                      src={logo.src}
+                      alt={s.name}
+                      className="h-4 w-auto max-w-[64px] shrink-0"
+                      style={logo.needsInvert ? { filter: 'brightness(0) invert(1)' } : undefined}
+                    />
+                  ) : (
+                    <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: s.color }} />
+                  )}
                   <span className="text-sm text-foreground flex-1 truncate">{s.name}</span>
                   {added ? (
                     <Check className="h-4 w-4 text-green-500 shrink-0" />
@@ -328,10 +351,24 @@ const Settings = () => {
             <div className="rounded-xl border border-border bg-card overflow-hidden divide-y divide-border">
               {services.map((service) => (
                 <div key={service.id} className="flex items-center justify-between px-4 py-3">
+                  {(() => {
+                    const sLogo = getPlatformLogo(service.name);
+                    return (
                   <div className="flex items-center gap-3">
-                    <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: service.color }} />
+                    {sLogo ? (
+                      <img
+                        src={sLogo.src}
+                        alt={service.name}
+                        className="h-4 w-auto max-w-[64px] shrink-0"
+                        style={sLogo.needsInvert ? { filter: 'brightness(0) invert(1)' } : undefined}
+                      />
+                    ) : (
+                      <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: service.color }} />
+                    )}
                     <span className="text-sm text-foreground">{service.name}</span>
                   </div>
+                    );
+                  })()}
                   <button
                     onClick={() => handleDeleteService(service)}
                     className="rounded-md p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"

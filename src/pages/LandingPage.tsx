@@ -1,17 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Tv, CalendarDays, CheckCircle } from 'lucide-react';
-import { PLATFORM_LABELS } from '@/types/show';
 import { trackEvent } from '@/lib/posthog';
+import { getPlatformLogo } from '@/lib/platformLogos';
 import plotifyWordmark from '@/assets/plotify-wordmark.png';
 import plotifyIcon from '@/assets/plotify-logo.png';
 
-const PLATFORMS: { key: string; label: string; colorClass: string }[] = [
-  { key: 'netflix', label: 'Netflix', colorClass: 'text-platform-netflix' },
-  { key: 'disney', label: 'Disney+', colorClass: 'text-platform-disney' },
-  { key: 'apple', label: 'Apple TV+', colorClass: 'text-platform-apple' },
-  { key: 'prime', label: 'Prime Video', colorClass: 'text-platform-prime' },
-  { key: 'bbc', label: 'BBC iPlayer', colorClass: 'text-platform-bbc' },
+const PLATFORMS = [
+  { key: 'netflix', label: 'Netflix' },
+  { key: 'disney', label: 'Disney+' },
+  { key: 'apple', label: 'Apple TV+' },
+  { key: 'prime', label: 'Prime Video' },
+  { key: 'bbc', label: 'BBC iPlayer' },
 ];
 
 const HOW_IT_WORKS = [
@@ -159,14 +159,21 @@ const LandingPage = () => {
 
       {/* PLATFORM BAR */}
       <section className="border-y border-border py-5 bg-surface-0">
-        <div className="flex items-center justify-center flex-wrap gap-x-2 gap-y-1 px-4 text-sm">
-          <span className="text-muted-foreground">Tracking shows across</span>
-          {PLATFORMS.map((p, i) => (
-            <span key={p.key}>
-              <span className={p.colorClass + ' font-semibold'}>{p.label}</span>
-              {i < PLATFORMS.length - 1 && <span className="text-muted-foreground mx-1">·</span>}
-            </span>
-          ))}
+        <div className="flex items-center justify-center flex-wrap gap-6 px-4">
+          {PLATFORMS.map((p) => {
+            const logo = getPlatformLogo(p.key);
+            return logo ? (
+              <img
+                key={p.key}
+                src={logo.src}
+                alt={p.label}
+                className="h-7 w-auto max-w-[100px] opacity-70 hover:opacity-100 transition-opacity duration-200"
+                style={logo.needsInvert ? { filter: 'brightness(0) invert(1)' } : undefined}
+              />
+            ) : (
+              <span key={p.key} className="text-sm font-semibold text-muted-foreground">{p.label}</span>
+            );
+          })}
         </div>
       </section>
 
