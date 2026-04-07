@@ -8,20 +8,18 @@ const AuthCallback = () => {
 
   useEffect(() => {
     const handleCallback = async () => {
-      const code = searchParams.get('code');
+      try {
+        const code = searchParams.get('code');
 
-      if (code) {
-        // PKCE flow: exchange the code for a session
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
-        if (error) {
-          console.error('Auth callback error:', error);
+        if (code) {
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          if (error) console.error('Auth callback error:', error);
+        } else {
+          const { error } = await supabase.auth.getSession();
+          if (error) console.error('Auth callback error:', error);
         }
-      } else {
-        // Implicit/magic-link flow: tokens are in the URL hash, picked up automatically
-        const { error } = (await supabase.auth.getSession()).error ? { error: (await supabase.auth.getSession()).error } : { error: null };
-        if (error) {
-          console.error('Auth callback error:', error);
-        }
+      } catch (e) {
+        console.error('Auth callback exception:', e);
       }
 
       navigate('/home', { replace: true });

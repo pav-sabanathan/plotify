@@ -6,12 +6,13 @@ import CalendarView from '@/components/CalendarView';
 import EmptyDashboard from '@/components/EmptyDashboard';
 import OnboardingModal from '@/components/OnboardingModal';
 import AppFooter from '@/components/AppFooter';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 import EmailVerificationBanner from '@/components/EmailVerificationBanner';
 import { trackEvent } from '@/lib/posthog';
 
 const Dashboard = () => {
-  const { shows } = useShows();
+  const { shows, loading } = useShows();
   const { user } = useAuth();
   const [showOnboarding, setShowOnboarding] = useState(() => {
     return !localStorage.getItem('plotify-onboarding-done') && !localStorage.getItem('plotify-shows');
@@ -24,27 +25,37 @@ const Dashboard = () => {
 
   useEffect(() => { trackEvent('app_opened'); }, []);
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <p className="text-muted-foreground">Loading…</p>
+      </div>
+    );
+  }
+
   const isEmpty = shows.length === 0;
 
   return (
-    <div className={`px-4 max-w-4xl mx-auto ${isEmpty ? '' : 'space-y-6 pb-20'}`}>
-      {user && <EmailVerificationBanner />}
-      {isEmpty ? (
-        <>
-          <EmptyDashboard />
-          <div className="hidden md:block">
+    <ErrorBoundary fallback={<EmptyDashboard />}>
+      <div className={`px-4 max-w-4xl mx-auto ${isEmpty ? '' : 'space-y-6 pb-20'}`}>
+        {user && <EmailVerificationBanner />}
+        {isEmpty ? (
+          <>
+            <EmptyDashboard />
+            <div className="hidden md:block">
+              <AppFooter />
+            </div>
+          </>
+        ) : (
+          <>
+            <UpNextStrip />
+            <CalendarView />
             <AppFooter />
-          </div>
-        </>
-      ) : (
-        <>
-          <UpNextStrip />
-          <CalendarView />
-          <AppFooter />
-        </>
-      )}
-      {showOnboarding && <OnboardingModal onDismiss={dismissOnboarding} />}
-    </div>
+          </>
+        )}
+        {showOnboarding && <OnboardingModal onDismiss={dismissOnboarding} />}
+      </div>
+    </ErrorBoundary>
   );
 };
 
