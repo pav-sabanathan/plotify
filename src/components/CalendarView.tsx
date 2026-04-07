@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useShows } from '@/context/ShowsContext';
 import { useCustomServices } from '@/context/CustomServicesContext';
 import {
@@ -10,6 +10,7 @@ import { PLATFORM_COLORS } from '@/types/show';
 import { isBuiltInPlatform, getPlatformColor, getPlatformContrastClass } from '@/lib/platformUtils';
 import { cn } from '@/lib/utils';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { searchTvMazeShow, fetchAllEpisodes } from '@/hooks/useTvMazeEpisodes';
 
 type CalendarMode = 'week' | 'month';
 
@@ -27,6 +28,10 @@ interface CalendarEvent {
   isPast: boolean;
 }
 
+interface TvMazeCache {
+  [showName: string]: { season: number; episode: number; airDate: string; title?: string }[];
+}
+
 const CalendarView = () => {
   const { shows, openDetail } = useShows();
   const { services: customServices } = useCustomServices();
@@ -35,6 +40,8 @@ const CalendarView = () => {
     return (saved === 'month' || saved === 'week') ? saved : 'week';
   });
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [tvMazeData, setTvMazeData] = useState<TvMazeCache>({});
+  const [tvMazeLoading, setTvMazeLoading] = useState(false);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -42,31 +49,98 @@ const CalendarView = () => {
   const showPastEpisodes = localStorage.getItem('plotify-show-past-episodes') === 'true';
   const thirtyDaysAgo = subDays(today, 30);
 
+  // Fetch TVMaze episodes for all active shows
+  const activeShows = useMemo(() => shows.filter(s => !s.paused), [shows]);
+
+  useEffect(() => {
+    if (activeShows.length === 0) return;
+
+    let cancelled = false;
+    const fetchAll = async () => {
+      setTvMazeLoading(true);
+      const cache: TvMazeCache = {};
+
+      for (const show of activeShows) {
+        if (cancelled) return;
+        // Skip if already cached
+        if (tvMazeData[show.name]) {
+          cache[show.name] = tvMazeData[show.name];
+          continue;
+        }
+        try {
+          const tvMazeId = await searchTvMazeShow(show.name);
+          if (cancelled) return;
+          if (!tvMazeId) continue;
+          const allEps = await fetchAllEpisodes(tvMazeId);
+          if (cancelled) return;
+          cache[show.name] = allEps
+            .filter(ep => ep.airdate) // only episodes with real dates
+            .map(ep => ({
+              season: ep.season,
+              episode: ep.number,
+              airDate: ep.airdate,
+              title: ep.name || undefined,
+            }));
+        } catch {
+          // skip
+        }
+      }
+
+      if (!cancelled) {
+        setTvMazeData(prev => ({ ...prev, ...cache }));
+        setTvMazeLoading(false);
+      }
+    };
+
+    fetchAll();
+    return () => { cancelled = true; };
+  }, [activeShows.map(s => s.id).join(',')]);
+
   const events = useMemo(() => {
     const allEvents: CalendarEvent[] = [];
-    shows.filter(s => !s.paused).forEach(show => {
+    activeShows.forEach(show => {
+      // Use TVMaze data if available, otherwise fall back to stored episodes
+      const tvEps = tvMazeData[show.name];
+      const episodes = tvEps
+        ? tvEps.map(ep => ({
+            id: `s${ep.season}e${ep.episode}`,
+            season: ep.season,
+            episode: ep.episode,
+            title: ep.title,
+            airDate: ep.airDate,
+          }))
+        : show.episodes;
+
       if (show.releaseType === 'full-season') {
-        const firstEp = show.episodes[0];
-        if (firstEp) {
-          const isPast = isBefore(parseISO(firstEp.airDate), today);
+        // For full-season, group by season and show earliest date
+        const seasonMap = new Map<number, typeof episodes[0]>();
+        episodes.forEach(ep => {
+          if (!ep.airDate) return;
+          if (!seasonMap.has(ep.season) || ep.airDate < seasonMap.get(ep.season)!.airDate) {
+            seasonMap.set(ep.season, ep);
+          }
+        });
+        seasonMap.forEach((ep) => {
+          const isPast = isBefore(parseISO(ep.airDate), today);
           if (isPast && !showPastEpisodes) return;
-          if (isPast && isBefore(parseISO(firstEp.airDate), thirtyDaysAgo)) return;
+          if (isPast && isBefore(parseISO(ep.airDate), thirtyDaysAgo)) return;
           allEvents.push({
             showId: show.id,
             showName: show.name,
             poster: show.poster,
             platform: show.platform,
-            season: firstEp.season,
-            episode: firstEp.episode,
-            episodeId: firstEp.id,
-            episodeTitle: firstEp.title,
-            airDate: firstEp.airDate,
+            season: ep.season,
+            episode: ep.episode,
+            episodeId: ep.id,
+            episodeTitle: ep.title,
+            airDate: ep.airDate,
             isFullSeason: true,
             isPast,
           });
-        }
+        });
       } else {
-        show.episodes.forEach(ep => {
+        episodes.forEach(ep => {
+          if (!ep.airDate) return;
           const isPast = isBefore(parseISO(ep.airDate), today);
           if (isPast && !showPastEpisodes) return;
           if (isPast && isBefore(parseISO(ep.airDate), thirtyDaysAgo)) return;
@@ -87,7 +161,7 @@ const CalendarView = () => {
       }
     });
     return allEvents;
-  }, [shows, today, showPastEpisodes]);
+  }, [activeShows, tvMazeData, today, showPastEpisodes]);
 
   const days = useMemo(() => {
     if (mode === 'week') {

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useShows } from '@/context/ShowsContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -30,18 +30,25 @@ function setDismissedStorage(showId: string, season: number) {
 
 export function useNewSeasonCheck() {
   const { user } = useAuth();
-  const { shows, updateShow } = useShows();
+  const { shows } = useShows();
   const [alerts, setAlerts] = useState<NewSeasonAlert[]>([]);
+  const runningRef = useRef(false);
+  const updatedIdsRef = useRef(new Set<string>());
 
   useEffect(() => {
     if (!user || !TMDB_TOKEN || shows.length === 0) return;
+    if (runningRef.current) return;
 
     const checkShows = async () => {
+      runningRef.current = true;
       const now = Date.now();
       const dismissed = getDismissed();
       const newAlerts: NewSeasonAlert[] = [];
 
       for (const show of shows) {
+        // Skip shows we just updated this session
+        if (updatedIdsRef.current.has(show.id)) continue;
+
         const tmdbIdMatch = show.id.match(/^tmdb-(\d+)-/);
         if (!tmdbIdMatch) continue;
         const tmdbId = parseInt(tmdbIdMatch[1], 10);
@@ -92,6 +99,8 @@ export function useNewSeasonCheck() {
         }
       }
 
+      runningRef.current = false;
+
       if (newAlerts.length > 0) {
         setAlerts(prev => {
           const existingIds = new Set(prev.map(a => a.showId));
@@ -105,10 +114,13 @@ export function useNewSeasonCheck() {
   }, [user, shows]);
 
   const handleUpdate = useCallback(async (alert: NewSeasonAlert) => {
-    updateShow(alert.showId, {
-      episodes: [],
-    });
+    // Mark as updated immediately to prevent re-check
+    updatedIdsRef.current.add(alert.showId);
+    // Remove alert from UI first
+    setAlerts(prev => prev.filter(a => a.showId !== alert.showId));
+
     if (user) {
+      // Update season, episode, and last_checked_at atomically in Supabase
       await supabase
         .from('shows')
         .update({
@@ -119,8 +131,7 @@ export function useNewSeasonCheck() {
         .eq('id', alert.showId)
         .eq('user_id', user.id);
     }
-    setAlerts(prev => prev.filter(a => a.showId !== alert.showId));
-  }, [updateShow, user]);
+  }, [user]);
 
   const handleDismiss = useCallback((showId: string) => {
     const alert = alerts.find(a => a.showId === showId);
