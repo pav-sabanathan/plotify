@@ -8,6 +8,25 @@ interface WatchmodeSource {
   web_url: string;
 }
 
+/*
+ * Platform alias mappings (case-insensitive lookup)
+ *
+ * Built-in platforms:
+ *   "netflix"                        → netflix
+ *   "disney+" / "disney plus"        → disney
+ *   "apple tv+" / "apple tv plus" / "apple tv" → apple
+ *   "amazon prime video" / "prime video"        → prime
+ *   "bbc iplayer"                    → bbc
+ *
+ * Custom/suggested platforms:
+ *   "crave"                          → Crave
+ *   "paramount+" / "paramount plus"  → Paramount+
+ *   "hbo max" / "max"               → Max
+ *   "crunchyroll" / "crunchyroll premium" → Crunchyroll
+ *   "peacock" / "peacock premium"    → Peacock
+ *   "britbox"                        → BritBox
+ */
+
 // Canonical name aliases → Plotify built-in key
 const PLATFORM_MAP: Record<string, string> = {
   'netflix': 'netflix',
@@ -29,6 +48,7 @@ const SUGGESTED_MAP: Record<string, { key: string; name: string }> = {
   'hbo max': { key: 'max', name: 'Max' },
   'max': { key: 'max', name: 'Max' },
   'crunchyroll': { key: 'crunchyroll', name: 'Crunchyroll' },
+  'crunchyroll premium': { key: 'crunchyroll', name: 'Crunchyroll' },
   'peacock': { key: 'peacock', name: 'Peacock' },
   'peacock premium': { key: 'peacock', name: 'Peacock' },
   'britbox': { key: 'britbox', name: 'BritBox' },
