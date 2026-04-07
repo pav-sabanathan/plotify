@@ -199,6 +199,7 @@ const AuthModal = () => {
             </Button>
           </form>
         )}
+        </div>
       </DialogContent>
     </Dialog>
   );
